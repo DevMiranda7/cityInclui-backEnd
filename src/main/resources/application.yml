@@ -1,0 +1,6 @@
+aws:
+  s3:
+    region:
+    access-key:
+    secret-key:
+    bucket-name:
