@@ -9,4 +9,6 @@ import reactor.core.publisher.Mono;
 public interface OwnerService {
 
     Mono<ResponseOwnerDTO> cadastrarAnunciante(CreateOwnerDTO createOwnerDTO, Flux<FilePart> photos);
+
+    Flux<ResponseOwnerDTO> restaurantesCadastrados();
 }
