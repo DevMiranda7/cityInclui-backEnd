@@ -34,4 +34,10 @@ public class OwnerController {
                                 ResponseEntity.status(HttpStatus.CREATED)
                                         .body(responseOwnerDTO)));
     }
+
+    @GetMapping("/restaurantes")
+    Flux<ResponseOwnerDTO> restaurantesCadastrados(){
+       return ownerService.restaurantesCadastrados();
+    }
+
 }
