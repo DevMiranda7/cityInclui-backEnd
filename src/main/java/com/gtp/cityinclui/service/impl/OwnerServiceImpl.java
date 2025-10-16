@@ -61,6 +61,20 @@ public class OwnerServiceImpl implements OwnerService {
                 });
     }
 
+    @Override
+    public Flux<ResponseOwnerDTO> restaurantesCadastrados(){
+        return ownerRepository.findAll().flatMap(this::carregarFotosEConverterParaDTO);
+    }
+
+    private Mono<ResponseOwnerDTO> carregarFotosEConverterParaDTO(Owner owner){
+        return photoRepository.findByOwnerId(owner.getId())
+                .collectList()
+                .map(fotos -> {
+                    owner.setFotos(fotos);
+                    return ResponseOwnerDTO.fromEntity(owner);
+                });
+    }
+
     private Mono<List<PhotoRegister>> processarFotos(Long ownerId, Flux<FilePart> photos){
         Flux<PhotoRegister> fotosSalvas = photos
                 .flatMap(filePart -> salvarFoto(filePart, ownerId));
