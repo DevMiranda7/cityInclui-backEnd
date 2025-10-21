@@ -2,7 +2,8 @@ package com.gtp.cityinclui.entity;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.MappedCollection;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -15,8 +16,10 @@ public class Owner {
     @Id
     private Long id;
 
+    @Column("nome_restaurante")
     private String nomeDoRestaurante;
 
+    @Column("nome_anunciante")
     private String nomeDoAnunciante;
 
     private String cardapio;
@@ -27,13 +30,16 @@ public class Owner {
 
     private String senha;
 
-    @MappedCollection(idColumn = "owner_id")
+    @Transient
     private List<PhotoRegister> fotos;
 
+    @Column("token_recuperacao")
     private String tokenRecuperacao;
 
+    @Column("token_expiracao")
     private LocalDateTime tokenDeExpiracao;
     @CreatedDate
+    @Column("data_cadastro")
     private LocalDateTime dataDeCadastro;
 
     public Owner() {
