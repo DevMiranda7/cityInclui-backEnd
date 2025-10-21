@@ -1,6 +1,23 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5433/dbcity_gtp
+    username: postgres
+    password: 1234
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 10
+      max-idle-time: 30m
+
 aws:
   s3:
     region:
     access-key:
     secret-key:
     bucket-name:
+
+
+jwt:
+  secret:
+  expiration:
+    ms:
