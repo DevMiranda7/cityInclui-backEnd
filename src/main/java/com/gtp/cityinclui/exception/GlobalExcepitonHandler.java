@@ -35,4 +35,18 @@ public class GlobalExcepitonHandler {
                 new ResponseEntity<>(errorResponseDTO, status)
         );
     }
+
+    @ExceptionHandler(UsuarioNaoExistenteException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> UsuarioNaoExistenteHandlerException(RuntimeException ex){
+
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO, status)
+        );
+    }
+
 }

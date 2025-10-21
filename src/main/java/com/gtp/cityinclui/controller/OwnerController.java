@@ -6,6 +6,8 @@ import com.gtp.cityinclui.service.OwnerService;
 import com.gtp.cityinclui.service.impl.OwnerServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,6 +40,15 @@ public class OwnerController {
     @GetMapping("/restaurantes")
     Flux<ResponseOwnerDTO> restaurantesCadastrados(){
        return ownerService.restaurantesCadastrados();
+    }
+
+    @GetMapping("/perfil-anunciante")
+    public Mono<ResponseEntity<ResponseOwnerDTO>> buscarPerfilOwner(@AuthenticationPrincipal Mono<String> authenticationEmail){
+        return authenticationEmail
+                .flatMap(ownerService::getPerfilOwner)
+                .map(responseOwnerDTO ->
+                        ResponseEntity.ok().body(responseOwnerDTO))
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
 }
