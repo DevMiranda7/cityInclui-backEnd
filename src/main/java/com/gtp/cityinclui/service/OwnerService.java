@@ -11,4 +11,6 @@ public interface OwnerService {
     Mono<ResponseOwnerDTO> cadastrarAnunciante(CreateOwnerDTO createOwnerDTO, Flux<FilePart> photos);
 
     Flux<ResponseOwnerDTO> restaurantesCadastrados();
+
+    Mono<ResponseOwnerDTO> getPerfilOwner(String email);
 }

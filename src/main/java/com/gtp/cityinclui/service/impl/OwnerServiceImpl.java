@@ -5,6 +5,7 @@ import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
 import com.gtp.cityinclui.entity.Owner;
 import com.gtp.cityinclui.entity.PhotoRegister;
 import com.gtp.cityinclui.exception.EmailJaExistenteException;
+import com.gtp.cityinclui.exception.UsuarioNaoExistenteException;
 import com.gtp.cityinclui.repository.OwnerRepository;
 import com.gtp.cityinclui.repository.PhotoRepository;
 import com.gtp.cityinclui.service.CloudStorageService;
@@ -51,19 +52,28 @@ public class OwnerServiceImpl implements OwnerService {
                                 Mono.just(ownerSave),
                                 this.processarFotos(ownerSave.getId(),photos)
                         )
-                )
-                .map(tuple -> {
-                    Owner ownerFinal = tuple.getT1();
-                    List<PhotoRegister> fotosSalvas = tuple.getT2();
+                            )
+                            .map(tuple -> {
+                                Owner ownerFinal = tuple.getT1();
+                                List<PhotoRegister> fotosSalvas = tuple.getT2();
 
-                    ownerFinal.setFotos(fotosSalvas);
-                    return ResponseOwnerDTO.fromEntity(ownerFinal);
-                });
+                                ownerFinal.setFotos(fotosSalvas);
+                                return ResponseOwnerDTO.fromEntity(ownerFinal);
+                            }
+                        );
     }
 
     @Override
     public Flux<ResponseOwnerDTO> restaurantesCadastrados(){
-        return ownerRepository.findAll().flatMap(this::carregarFotosEConverterParaDTO);
+        return ownerRepository.findAll()
+                .flatMap(this::carregarFotosEConverterParaDTO);
+    }
+
+    @Override
+    public Mono<ResponseOwnerDTO> getPerfilOwner(String email) {
+        return ownerRepository.findByEmail(email)
+                .flatMap(this::carregarFotosEConverterParaDTO)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))));
     }
 
     private Mono<ResponseOwnerDTO> carregarFotosEConverterParaDTO(Owner owner){

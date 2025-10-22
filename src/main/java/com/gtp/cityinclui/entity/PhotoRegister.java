@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Objects;
 
-@Table(name = "foto_registro")
+@Table(name = "Photo")
 public class PhotoRegister {
 
     @Id
@@ -15,6 +15,7 @@ public class PhotoRegister {
     @Column("owner_id")
     private Long ownerId;
 
+    @Column("url_photo")
     private String urlFoto;
 
     public PhotoRegister() {

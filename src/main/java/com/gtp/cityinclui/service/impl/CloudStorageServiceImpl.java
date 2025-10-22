@@ -3,11 +3,13 @@ package com.gtp.cityinclui.service.impl;
 import com.gtp.cityinclui.exception.CloudStorageException;
 import com.gtp.cityinclui.service.CloudStorageService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+@Service
 public class CloudStorageServiceImpl implements CloudStorageService {
 
     private final S3AsyncClient s3Client;

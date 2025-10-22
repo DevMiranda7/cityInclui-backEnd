@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ResponseOwnerDTO {
-    private Long id;
     private String nomeDoRestaurante;
     private String nomeDoAnunciante;
     private String cardapio;
@@ -18,8 +17,7 @@ public class ResponseOwnerDTO {
     public ResponseOwnerDTO() {
     }
 
-    public ResponseOwnerDTO(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String email, String telefone, List<Photos> photos) {
-        this.id = id;
+    public ResponseOwnerDTO( String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String email, String telefone, List<Photos> photos) {
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
         this.cardapio = cardapio;
@@ -30,7 +28,6 @@ public class ResponseOwnerDTO {
 
     public static ResponseOwnerDTO fromEntity(Owner owner){
         ResponseOwnerDTO responseOwnerDTO = new ResponseOwnerDTO();
-        responseOwnerDTO.setId(owner.getId());
         responseOwnerDTO.setNomeDoRestaurante(owner.getNomeDoRestaurante());
         responseOwnerDTO.setNomeDoAnunciante(owner.getNomeDoAnunciante());
         responseOwnerDTO.setCardapio(owner.getCardapio());
@@ -45,14 +42,6 @@ public class ResponseOwnerDTO {
             responseOwnerDTO.setPhotoDTOS(photosList);
         }
         return responseOwnerDTO;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getNomeDoRestaurante() {
@@ -106,13 +95,12 @@ public class ResponseOwnerDTO {
     @Override
     public String toString() {
         return "ResponseOwnerDTO{" +
-                "id=" + id +
-                ", nomeDoRestaurante='" + nomeDoRestaurante + '\'' +
+                "nomeDoRestaurante='" + nomeDoRestaurante + '\'' +
                 ", nomeDoAnunciante='" + nomeDoAnunciante + '\'' +
                 ", cardapio='" + cardapio + '\'' +
                 ", email='" + email + '\'' +
                 ", telefone='" + telefone + '\'' +
-                ", photoDTOS=" + photos +
+                ", photos=" + photos +
                 '}';
     }
 
@@ -121,11 +109,11 @@ public class ResponseOwnerDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ResponseOwnerDTO that = (ResponseOwnerDTO) o;
-        return Objects.equals(id, that.id) && Objects.equals(nomeDoRestaurante, that.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, that.nomeDoAnunciante) && Objects.equals(cardapio, that.cardapio) && Objects.equals(email, that.email) && Objects.equals(telefone, that.telefone) && Objects.equals(photos, that.photos);
+        return Objects.equals(nomeDoRestaurante, that.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, that.nomeDoAnunciante) && Objects.equals(cardapio, that.cardapio) && Objects.equals(email, that.email) && Objects.equals(telefone, that.telefone) && Objects.equals(photos, that.photos);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nomeDoRestaurante, nomeDoAnunciante, cardapio, email, telefone, photos);
+        return Objects.hash(nomeDoRestaurante, nomeDoAnunciante, cardapio, email, telefone, photos);
     }
 }
