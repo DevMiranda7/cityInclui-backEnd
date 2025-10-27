@@ -1,6 +1,7 @@
 package com.gtp.cityinclui.service.impl;
 
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
+import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
 import com.gtp.cityinclui.entity.Owner;
 import com.gtp.cityinclui.entity.PhotoRegister;
@@ -10,12 +11,14 @@ import com.gtp.cityinclui.repository.OwnerRepository;
 import com.gtp.cityinclui.repository.PhotoRepository;
 import com.gtp.cityinclui.service.CloudStorageService;
 import com.gtp.cityinclui.service.OwnerService;
-import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.util.List;
 import java.util.UUID;
@@ -76,6 +79,65 @@ public class OwnerServiceImpl implements OwnerService {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))));
     }
 
+    @Override
+    public Mono<ResponseOwnerDTO> editarAnunciante(String email, EditOwnerDTO editOwnerDTO, Flux<FilePart> photos) {
+       return ownerRepository.findByEmail(email)
+               .flatMap(ownerExistente -> {
+                   if (editOwnerDTO.getNomeDoRestaurante() != null){
+                       ownerExistente.setNomeDoRestaurante(editOwnerDTO.getNomeDoRestaurante());
+                   }
+                   if (editOwnerDTO.getNomeDoAnunciante() != null){
+                       ownerExistente.setNomeDoAnunciante(editOwnerDTO.getNomeDoAnunciante());
+                   }
+                   if (editOwnerDTO.getCardapio() != null){
+                       ownerExistente.setCardapio(editOwnerDTO.getCardapio());
+                   }
+                   if (editOwnerDTO.getTelefone() != null){
+                       ownerExistente.setTelefone(editOwnerDTO.getTelefone());
+                   }
+
+                   return ownerRepository.save(ownerExistente);
+               })
+               .flatMap(ownerAtualizado -> {
+                   return photos.collectList()
+                           .flatMap(listaFilesPart ->{
+                               List<FilePart> fotosNovasValidas = listaFilesPart.stream()
+                                       .filter(filePart -> filePart.filename() != null && !filePart.filename().isEmpty())
+                                       .toList();
+
+                               if (!fotosNovasValidas.isEmpty()){
+                                           Flux<FilePart> novasFotos =  Flux.fromIterable(fotosNovasValidas);
+
+                                           Mono<List<PhotoRegister>> salvarNovasFotos = this.processarFotos(ownerAtualizado.getId(),novasFotos)
+                                                   .cache();
+                                           Mono<List<PhotoRegister>> fotosAntigas = photoRepository.findByOwnerId(ownerAtualizado.getId())
+                                                   .collectList().cache();
+
+                                           Mono<Void> deletarS3 = fotosAntigas
+                                                   .flatMapMany(Flux::fromIterable)
+                                                   .flatMap(foto -> cloudStorageService.deleteFoto(foto.getUrlFoto()))
+                                                   .then();
+
+                                           Mono<Void> deletarFotosDb = photoRepository.deleteAllByOwnerId(ownerAtualizado.getId());
+                                           return  Mono.when(deletarS3,deletarFotosDb, salvarNovasFotos)
+                                                   .then(salvarNovasFotos)
+                                                   .map(listaNovasFotos -> Tuples.of(ownerAtualizado, listaNovasFotos));
+                                       }else{
+                                           return photoRepository.findByOwnerId(ownerAtualizado.getId())
+                                                   .collectList()
+                                                   .map(listaFotosAntigas -> Tuples.of(ownerAtualizado,listaFotosAntigas));
+                                       }
+                           });
+               })
+               .map(tuple -> {
+                   Owner owner = tuple.getT1();
+                   List<PhotoRegister> novasFotos = tuple.getT2();
+                   owner.setFotos(novasFotos);
+                   return ResponseOwnerDTO.fromEntity(owner);
+               })
+               .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))));
+    }
+
     private Mono<ResponseOwnerDTO> carregarFotosEConverterParaDTO(Owner owner){
         return photoRepository.findByOwnerId(owner.getId())
                 .collectList()
@@ -92,9 +154,17 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     private Mono<PhotoRegister> salvarFoto(FilePart filePart, Long ownerId){
-        String nomeArquivo = "reg_" + ownerId + "_" + UUID.randomUUID() + ".jpg";
-        String contentTipo = filePart.headers().getContentType().toString();
-        String safeContentTipo = (contentTipo != null && !contentTipo.isEmpty()) ? contentTipo : "application/octet-stream";
+
+        if (filePart.filename() == null || filePart.filename().isEmpty()){
+            return Mono.empty();
+        }
+
+        MediaType mediaType = filePart.headers().getContentType();
+        String safeContentTipo = (mediaType == null) ? "application/octet-stream" : mediaType.toString();
+
+        String original = filePart.filename();
+        String extensao = original.contains(".") ? original.substring(original.lastIndexOf(".")) : ".jpg";
+        String nomeArquivo = "reg_" + ownerId + "_" + UUID.randomUUID() + "." + extensao;
 
         return toByteArray(filePart)
                 .flatMap(bytes ->
@@ -109,12 +179,11 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     private Mono<byte[]> toByteArray(FilePart filePart){
-        return filePart.content()
-                .reduce(DataBuffer::write)
-                .map(DataBuffer::asByteBuffer)
-                .map(buffer -> {
-                    byte[] bytes = new byte[buffer.remaining()];
-                    buffer.get(bytes);
+        return DataBufferUtils.join(filePart.content())
+                .map(dataBuffer -> {
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    DataBufferUtils.release(dataBuffer);
                     return bytes;
                 });
     }
