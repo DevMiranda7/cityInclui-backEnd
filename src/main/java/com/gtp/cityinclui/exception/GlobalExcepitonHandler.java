@@ -13,7 +13,7 @@ public class GlobalExcepitonHandler {
     @ExceptionHandler(EmailJaExistenteException.class)
     public Mono<ResponseEntity<ErrorResponseDTO>> emailJaExistenteHandlerException(RuntimeException ex){
 
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+        HttpStatus status = HttpStatus.CONFLICT;
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                 ex.getMessage(),
                 status.value()
