@@ -7,7 +7,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 @Service
 public class CloudStorageServiceImpl implements CloudStorageService {
@@ -45,5 +49,28 @@ public class CloudStorageServiceImpl implements CloudStorageService {
             throw new CloudStorageException("Falha no upload para o S3: " + errorMessage);
 
         });
+    }
+
+    @Override
+    public Mono<Void> deleteFoto(String urlFoto) {
+        String nomeArquivo;
+
+        try {
+            URL url = new URL(urlFoto);
+            nomeArquivo = url.getPath().substring(1);
+        }catch (MalformedURLException e) {
+            return Mono.error(new RuntimeException("URL da foto é inválida", e));
+        }
+
+        if (nomeArquivo == null || nomeArquivo.isBlank()) {
+            return Mono.error(new RuntimeException("Não foi possível extrair nome do arquivo da URL: " + urlFoto));
+        }
+
+        return Mono.fromFuture(
+                s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(this.bucketName)
+                .key(nomeArquivo)
+                .build()))
+                .then();
     }
 }
