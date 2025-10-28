@@ -1,13 +1,13 @@
 package com.gtp.cityinclui.controller;
 
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
+import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
 import com.gtp.cityinclui.service.OwnerService;
 import com.gtp.cityinclui.service.impl.OwnerServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -48,7 +48,23 @@ public class OwnerController {
                 .flatMap(ownerService::getPerfilOwner)
                 .map(responseOwnerDTO ->
                         ResponseEntity.ok().body(responseOwnerDTO))
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+    }
+
+    @PutMapping("/edit-perfil")
+    public Mono<ResponseEntity<ResponseOwnerDTO>> editarAnunciante(
+            @AuthenticationPrincipal Mono<String> authenticationEmail,
+            @RequestPart("owner") Mono<EditOwnerDTO> editOwnerDTO,
+            @RequestPart("photos") Flux<FilePart> photosFlux
+    ){
+        return authenticationEmail
+                .flatMap(email ->
+                        editOwnerDTO.flatMap(ownerEdit ->
+                                ownerService.editarAnunciante(email,ownerEdit,photosFlux)
+                        )
+                ).map(responseOwnerDTO ->
+                        ResponseEntity.ok().body(responseOwnerDTO))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
 }
