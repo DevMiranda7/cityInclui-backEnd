@@ -21,7 +21,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class OwnerServiceImpl implements OwnerService {
@@ -100,33 +103,49 @@ public class OwnerServiceImpl implements OwnerService {
                })
                .flatMap(ownerAtualizado -> {
                    return photos.collectList()
-                           .flatMap(listaFilesPart ->{
+                           .flatMap(listaFilesPart -> {
                                List<FilePart> fotosNovasValidas = listaFilesPart.stream()
                                        .filter(filePart -> filePart.filename() != null && !filePart.filename().isEmpty())
                                        .toList();
 
-                               if (!fotosNovasValidas.isEmpty()){
-                                           Flux<FilePart> novasFotos =  Flux.fromIterable(fotosNovasValidas);
+                               if (fotosNovasValidas.isEmpty()) {
+                                   return photoRepository.findByOwnerId(ownerAtualizado.getId())
+                                           .collectList()
+                                           .map(fotosAntigasRep -> Tuples.of(ownerAtualizado, fotosAntigasRep));
+                               }
 
-                                           Mono<List<PhotoRegister>> salvarNovasFotos = this.processarFotos(ownerAtualizado.getId(),novasFotos)
-                                                   .cache();
-                                           Mono<List<PhotoRegister>> fotosAntigas = photoRepository.findByOwnerId(ownerAtualizado.getId())
-                                                   .collectList().cache();
+                               Flux<FilePart> novasFotos = Flux.fromIterable(fotosNovasValidas);
 
-                                           Mono<Void> deletarS3 = fotosAntigas
-                                                   .flatMapMany(Flux::fromIterable)
-                                                   .flatMap(foto -> cloudStorageService.deleteFoto(foto.getUrlFoto()))
-                                                   .then();
+                               Mono<List<PhotoRegister>> salvarNovasFotos = this.processarFotos(ownerAtualizado.getId(), novasFotos)
+                                       .cache();
 
-                                           Mono<Void> deletarFotosDb = photoRepository.deleteAllByOwnerId(ownerAtualizado.getId());
-                                           return  Mono.when(deletarS3,deletarFotosDb, salvarNovasFotos)
-                                                   .then(salvarNovasFotos)
-                                                   .map(listaNovasFotos -> Tuples.of(ownerAtualizado, listaNovasFotos));
-                                       }else{
-                                           return photoRepository.findByOwnerId(ownerAtualizado.getId())
-                                                   .collectList()
-                                                   .map(listaFotosAntigas -> Tuples.of(ownerAtualizado,listaFotosAntigas));
-                                       }
+                               return salvarNovasFotos.flatMap(listaFotosSalvas -> {
+                                   if (listaFotosSalvas.isEmpty()) {
+                                       return photoRepository.findByOwnerId(ownerAtualizado.getId())
+                                               .collectList()
+                                               .map(listaFotosAntigas -> Tuples.of(ownerAtualizado, listaFotosAntigas));
+                                   }
+
+                                   Set<Long> idsFotosNovas = listaFotosSalvas.stream()
+                                           .map(PhotoRegister::getId)
+                                           .collect(Collectors.toSet());
+
+                                   Mono<List<PhotoRegister>> fotosAntigas = photoRepository.findByOwnerId(ownerAtualizado.getId())
+                                           .filter(foto -> !idsFotosNovas.contains(foto.getId()))
+                                           .collectList();
+
+                                   Mono<Void> deletarFotosAntigas = fotosAntigas
+                                           .flatMapMany(Flux::fromIterable)
+                                           .flatMap(fotosAntiga -> {
+                                               Mono<Void> deleteS3 = cloudStorageService.deleteFoto(fotosAntiga.getUrlFoto());
+
+                                               Mono<Void> deleteDb = photoRepository.deleteById(fotosAntiga.getId());
+                                               return Mono.when(deleteS3, deleteDb);
+                                           })
+                                           .then();
+
+                                   return deletarFotosAntigas.then(Mono.just(Tuples.of(ownerAtualizado, listaFotosSalvas)));
+                               });
                            });
                })
                .map(tuple -> {
@@ -167,9 +186,13 @@ public class OwnerServiceImpl implements OwnerService {
         String nomeArquivo = "reg_" + ownerId + "_" + UUID.randomUUID() + "." + extensao;
 
         return toByteArray(filePart)
-                .flatMap(bytes ->
-        cloudStorageService.uploadFoto(bytes,nomeArquivo,safeContentTipo)
-        )
+                .flatMap(bytes -> {
+                    if (bytes.length == 0) {
+                        return Mono.empty();
+                    }
+
+                    return cloudStorageService.uploadFoto(bytes,nomeArquivo,safeContentTipo);
+        })
                 .flatMap(urlFoto -> {
                     PhotoRegister foto = new PhotoRegister();
                     foto.setOwnerId(ownerId);
