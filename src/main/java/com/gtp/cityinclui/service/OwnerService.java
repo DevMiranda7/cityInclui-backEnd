@@ -16,4 +16,6 @@ public interface OwnerService {
     Mono<ResponseOwnerDTO> getPerfilOwner(String email);
 
     Mono<ResponseOwnerDTO> editarAnunciante(String email, EditOwnerDTO editOwnerDTO, Flux<FilePart> photos);
+
+    Mono<Void> deletarContaOwner(String email);
 }
