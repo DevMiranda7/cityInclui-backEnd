@@ -23,7 +23,6 @@ import reactor.util.function.Tuples;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -155,6 +154,27 @@ public class OwnerServiceImpl implements OwnerService {
                    return ResponseOwnerDTO.fromEntity(owner);
                })
                .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))));
+    }
+
+    @Override
+    public Mono<Void> deletarContaOwner(String email) {
+        Mono<Owner> ownerDelete = ownerRepository.findByEmail(email)
+                .switchIfEmpty(Mono.error(
+                        new UsuarioNaoExistenteException("Owner não encontrado com o email: " + email)
+                ));
+        return ownerDelete.flatMap(owner -> {
+            return photoRepository.findByOwnerId(owner.getId()).collectList()
+                    .flatMap(photos -> {
+                        Mono<Void> deleteS3Files = Flux.fromIterable(photos)
+                                .map(PhotoRegister::getUrlFoto)
+                                .flatMap(url -> cloudStorageService.deleteFoto(url))
+                                .then();
+
+                        Mono<Void> deletePhotos = photoRepository.deleteAll(photos).then(ownerRepository.delete(owner));
+
+                        return deleteS3Files.then(deletePhotos);
+             });
+        });
     }
 
     private Mono<ResponseOwnerDTO> carregarFotosEConverterParaDTO(Owner owner){

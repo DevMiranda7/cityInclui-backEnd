@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.GET,"/cityinclui/restaurantes/**").permitAll()
                         .pathMatchers(HttpMethod.GET,"/cityinclui/perfil-anunciante").hasRole("OWNER")
                         .pathMatchers(HttpMethod.PUT,"/cityinclui/edit-perfil").hasRole("OWNER")
+                        .pathMatchers(HttpMethod.DELETE,"/cityinclui/advanced-settings").hasRole("OWNER")
                         .anyExchange().authenticated()
                 )
                 .build();

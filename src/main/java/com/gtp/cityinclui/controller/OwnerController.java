@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.http.HttpStatus;
@@ -65,6 +66,18 @@ public class OwnerController {
                 ).map(responseOwnerDTO ->
                         ResponseEntity.ok().body(responseOwnerDTO))
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+    }
+
+    @DeleteMapping("/advanced-settings")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deletarConta(
+            @AuthenticationPrincipal Mono<String> authenticationEmail
+    ) {
+        return authenticationEmail
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Autenticação necessária"))
+                ).flatMap(email ->
+                        ownerService.deletarContaOwner(email));
     }
 
 }
