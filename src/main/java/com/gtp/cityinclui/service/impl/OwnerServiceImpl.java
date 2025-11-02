@@ -6,6 +6,8 @@ import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
 import com.gtp.cityinclui.entity.Owner;
 import com.gtp.cityinclui.entity.PhotoRegister;
 import com.gtp.cityinclui.exception.EmailJaExistenteException;
+import com.gtp.cityinclui.exception.FormatoArquivoInvalidoException;
+import com.gtp.cityinclui.exception.LimiteDeFotosExcedidoException;
 import com.gtp.cityinclui.exception.UsuarioNaoExistenteException;
 import com.gtp.cityinclui.repository.OwnerRepository;
 import com.gtp.cityinclui.repository.PhotoRepository;
@@ -18,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,10 @@ public class OwnerServiceImpl implements OwnerService {
     private final PhotoRepository photoRepository;
     private final CloudStorageService cloudStorageService;
     private final PasswordEncoder passwordEncoder;
-
+    private static final List<MediaType> TIPOS_DE_IMAGEM_PERMITIDO = List.of(
+            MediaType.IMAGE_JPEG,
+            MediaType.IMAGE_PNG
+    );
     public OwnerServiceImpl(OwnerRepository ownerRepository, PhotoRepository photoRepository, CloudStorageService cloudStorageService, PasswordEncoder passwordEncoder) {
         this.ownerRepository = ownerRepository;
         this.photoRepository = photoRepository;
@@ -71,7 +75,7 @@ public class OwnerServiceImpl implements OwnerService {
     @Override
     public Flux<ResponseOwnerDTO> restaurantesCadastrados(){
         return ownerRepository.findAll()
-                .flatMap(this::carregarFotosEConverterParaDTO);
+                .concatMap(this::carregarFotosEConverterParaDTO);
     }
 
     @Override
@@ -83,77 +87,20 @@ public class OwnerServiceImpl implements OwnerService {
 
     @Override
     public Mono<ResponseOwnerDTO> editarAnunciante(String email, EditOwnerDTO editOwnerDTO, Flux<FilePart> photos) {
-       return ownerRepository.findByEmail(email)
-               .flatMap(ownerExistente -> {
-                   if (editOwnerDTO.getNomeDoRestaurante() != null){
-                       ownerExistente.setNomeDoRestaurante(editOwnerDTO.getNomeDoRestaurante());
-                   }
-                   if (editOwnerDTO.getNomeDoAnunciante() != null){
-                       ownerExistente.setNomeDoAnunciante(editOwnerDTO.getNomeDoAnunciante());
-                   }
-                   if (editOwnerDTO.getCardapio() != null){
-                       ownerExistente.setCardapio(editOwnerDTO.getCardapio());
-                   }
-                   if (editOwnerDTO.getTelefone() != null){
-                       ownerExistente.setTelefone(editOwnerDTO.getTelefone());
-                   }
+      return ownerRepository.findByEmail(email)
+              .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))))
+              .flatMap(ownerExistente -> atualizarCamposDeTextos(ownerExistente,editOwnerDTO))
+              .flatMap(ownerAtualizado -> {
+                  Mono<List<PhotoRegister>> fotosFinais = orchestradorDeProcessosDeFoto(ownerAtualizado,photos);
 
-                   return ownerRepository.save(ownerExistente);
-               })
-               .flatMap(ownerAtualizado -> {
-                   return photos.collectList()
-                           .flatMap(listaFilesPart -> {
-                               List<FilePart> fotosNovasValidas = listaFilesPart.stream()
-                                       .filter(filePart -> filePart.filename() != null && !filePart.filename().isEmpty())
-                                       .toList();
-
-                               if (fotosNovasValidas.isEmpty()) {
-                                   return photoRepository.findByOwnerId(ownerAtualizado.getId())
-                                           .collectList()
-                                           .map(fotosAntigasRep -> Tuples.of(ownerAtualizado, fotosAntigasRep));
-                               }
-
-                               Flux<FilePart> novasFotos = Flux.fromIterable(fotosNovasValidas);
-
-                               Mono<List<PhotoRegister>> salvarNovasFotos = this.processarFotos(ownerAtualizado.getId(), novasFotos)
-                                       .cache();
-
-                               return salvarNovasFotos.flatMap(listaFotosSalvas -> {
-                                   if (listaFotosSalvas.isEmpty()) {
-                                       return photoRepository.findByOwnerId(ownerAtualizado.getId())
-                                               .collectList()
-                                               .map(listaFotosAntigas -> Tuples.of(ownerAtualizado, listaFotosAntigas));
-                                   }
-
-                                   Set<Long> idsFotosNovas = listaFotosSalvas.stream()
-                                           .map(PhotoRegister::getId)
-                                           .collect(Collectors.toSet());
-
-                                   Mono<List<PhotoRegister>> fotosAntigas = photoRepository.findByOwnerId(ownerAtualizado.getId())
-                                           .filter(foto -> !idsFotosNovas.contains(foto.getId()))
-                                           .collectList();
-
-                                   Mono<Void> deletarFotosAntigas = fotosAntigas
-                                           .flatMapMany(Flux::fromIterable)
-                                           .flatMap(fotosAntiga -> {
-                                               Mono<Void> deleteS3 = cloudStorageService.deleteFoto(fotosAntiga.getUrlFoto());
-
-                                               Mono<Void> deleteDb = photoRepository.deleteById(fotosAntiga.getId());
-                                               return Mono.when(deleteS3, deleteDb);
-                                           })
-                                           .then();
-
-                                   return deletarFotosAntigas.then(Mono.just(Tuples.of(ownerAtualizado, listaFotosSalvas)));
-                               });
-                           });
-               })
-               .map(tuple -> {
-                   Owner owner = tuple.getT1();
-                   List<PhotoRegister> novasFotos = tuple.getT2();
-                   owner.setFotos(novasFotos);
-                   return ResponseOwnerDTO.fromEntity(owner);
-               })
-               .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))));
+                  return Mono.zip(Mono.just(ownerAtualizado), fotosFinais);
+              })
+              .map(tuple -> {
+                  Owner owner = tuple.getT1();
+                  List<PhotoRegister> fotos = tuple.getT2();
+                  owner.setFotos(fotos);
+                  return ResponseOwnerDTO.fromEntity(owner);
+              });
     }
 
     @Override
@@ -175,6 +122,71 @@ public class OwnerServiceImpl implements OwnerService {
                         return deleteS3Files.then(deletePhotos);
              });
         });
+    }
+
+    private Mono<Owner> atualizarCamposDeTextos(Owner ownerExistente, EditOwnerDTO editOwnerDTO){
+        if (editOwnerDTO.getNomeDoRestaurante() != null){
+            ownerExistente.setNomeDoRestaurante(editOwnerDTO.getNomeDoRestaurante());
+        }
+        if (editOwnerDTO.getNomeDoAnunciante() != null){
+            ownerExistente.setNomeDoAnunciante(editOwnerDTO.getNomeDoAnunciante());
+        }
+        if (editOwnerDTO.getCardapio() != null){
+            ownerExistente.setCardapio(editOwnerDTO.getCardapio());
+        }
+        if (editOwnerDTO.getTelefone() != null){
+            ownerExistente.setTelefone(editOwnerDTO.getTelefone());
+        }
+
+        return ownerRepository.save(ownerExistente);
+    }
+
+    private Mono<List<PhotoRegister>> orchestradorDeProcessosDeFoto(Owner owner, Flux<FilePart> photos){
+        return photos
+                .filter(filePart -> filePart.filename() != null && !filePart.filename()
+                        .isEmpty()).collectList()
+                        .flatMap(fotosValidas -> {
+
+                            if (fotosValidas.size() > 3) {
+                                return Mono.error(new LimiteDeFotosExcedidoException("Limite de fotos ultrapassado"));
+                            }
+
+                            if (fotosValidas.isEmpty()){
+                                return buscarFotosExistentes(owner.getId());
+                            }
+                            return salvarNovasERemoverAntigas(owner.getId(),Flux.fromIterable(fotosValidas));
+                        });
+    }
+
+    private Mono<List<PhotoRegister>> salvarNovasERemoverAntigas(Long onwerId, Flux<FilePart> fotosNovas){
+        Mono<List<PhotoRegister>> salvarNovasFotos = this.processarFotos(onwerId,fotosNovas).cache();
+
+        return salvarNovasFotos.flatMap(listaFotosSalvas -> {
+            if (listaFotosSalvas.isEmpty()){
+                return buscarFotosExistentes(onwerId);
+            }
+
+            Set<Long> idsFotosExistentes = listaFotosSalvas.stream()
+                    .map(PhotoRegister::getId)
+                    .collect(Collectors.toSet());
+
+            Mono<Void> deletarAntigas = photoRepository.findByOwnerId(onwerId)
+                    .filter(fotoAntiga -> !idsFotosExistentes.contains(fotoAntiga.getId()))
+                    .flatMap(this::deletarFotosS3)
+                    .then();
+
+            return deletarAntigas.then(Mono.just(listaFotosSalvas));
+        });
+    }
+
+    private Mono<Void> deletarFotosS3(PhotoRegister fotoAntigas) {
+        Mono<Void> deleteS3 = cloudStorageService.deleteFoto(fotoAntigas.getUrlFoto());
+        Mono<Void> deleteDb = photoRepository.deleteById(fotoAntigas.getId());
+        return Mono.when(deleteS3,deleteDb);
+    }
+
+    private Mono<List<PhotoRegister>> buscarFotosExistentes(Long onwerId){
+        return photoRepository.findByOwnerId(onwerId).collectList();
     }
 
     private Mono<ResponseOwnerDTO> carregarFotosEConverterParaDTO(Owner owner){
@@ -199,7 +211,10 @@ public class OwnerServiceImpl implements OwnerService {
         }
 
         MediaType mediaType = filePart.headers().getContentType();
-        String safeContentTipo = (mediaType == null) ? "application/octet-stream" : mediaType.toString();
+        if (mediaType == null || !TIPOS_DE_IMAGEM_PERMITIDO.contains(mediaType)){
+            return Mono.error(new FormatoArquivoInvalidoException("Formato de arquivo inválido. Apenas JPEG e PNG são permitidos."));
+        }
+        String safeContentTipo = mediaType.toString();
 
         String original = filePart.filename();
         String extensao = original.contains(".") ? original.substring(original.lastIndexOf(".")) : ".jpg";

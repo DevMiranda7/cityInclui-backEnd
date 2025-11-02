@@ -48,7 +48,8 @@ public class CloudStorageServiceImpl implements CloudStorageService {
             String errorMessage = response.sdkHttpResponse().statusText().orElse("Erro desconhecido");
             throw new CloudStorageException("Falha no upload para o S3: " + errorMessage);
 
-        });
+        }).onErrorMap(throwable ->
+                new CloudStorageException("Erro ao tentar fazer upload para o S3: "+throwable.getMessage() , throwable));
     }
 
     @Override
@@ -59,18 +60,21 @@ public class CloudStorageServiceImpl implements CloudStorageService {
             URL url = new URL(urlFoto);
             nomeArquivo = url.getPath().substring(1);
         }catch (MalformedURLException e) {
-            return Mono.error(new RuntimeException("URL da foto é inválida", e));
+            return Mono.error(new CloudStorageException("URL da foto é inválida ", e));
         }
 
         if (nomeArquivo == null || nomeArquivo.isBlank()) {
-            return Mono.error(new RuntimeException("Não foi possível extrair nome do arquivo da URL: " + urlFoto));
+            return Mono.error(new CloudStorageException("Não foi possível extrair nome do arquivo da URL: " + urlFoto));
         }
 
-        return Mono.fromFuture(
-                s3Client.deleteObject(DeleteObjectRequest.builder()
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(this.bucketName)
                 .key(nomeArquivo)
-                .build()))
-                .then();
+                .build();
+
+        return Mono.fromFuture(s3Client.deleteObject(deleteObjectRequest))
+                .onErrorMap(throwable ->
+                        new CloudStorageException("Erro ao tentar deletar foto do S3: " + throwable.getMessage() , throwable)).then();
+
     }
 }
