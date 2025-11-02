@@ -49,4 +49,30 @@ public class GlobalExcepitonHandler {
         );
     }
 
+    @ExceptionHandler(AutenticacaoNecessariaException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> AutenticacaoNecessariaHandlerException(RuntimeException ex){
+
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO, status)
+        );
+    }
+
+    @ExceptionHandler(DadosEmFaltaException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> DadosEmFaltaHandlerException(RuntimeException ex){
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO, status)
+        );
+    }
+
 }
