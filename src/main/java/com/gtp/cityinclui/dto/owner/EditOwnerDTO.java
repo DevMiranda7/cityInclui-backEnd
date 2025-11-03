@@ -1,15 +1,21 @@
 package com.gtp.cityinclui.dto.owner;
 
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import java.util.Objects;
 
 public class EditOwnerDTO {
 
+    @Size(min = 2, max = 100, message = "O nome do restaurante deve ter entre 2 e 100 caracteres")
     private String nomeDoRestaurante;
 
+    @Size(min = 2, max = 100, message = "O nome do anunciante deve ter entre 2 e 50 caracteres")
     private String nomeDoAnunciante;
 
     private String cardapio;
 
+    @Pattern(regexp = "^[0-9]{10,11}$", message = "O telefone deve conter apenas números (10 ou 11 dígitos)")
     private String telefone;
 
     public EditOwnerDTO() {

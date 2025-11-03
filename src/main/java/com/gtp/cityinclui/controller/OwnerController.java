@@ -3,13 +3,13 @@ package com.gtp.cityinclui.controller;
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
+import com.gtp.cityinclui.exception.AutenticacaoNecessariaException;
 import com.gtp.cityinclui.service.OwnerService;
 import com.gtp.cityinclui.service.impl.OwnerServiceImpl;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.http.HttpStatus;
@@ -27,15 +27,12 @@ public class OwnerController {
     }
 
     @PostMapping("/cadastrar-anunciante")
-    Mono<ResponseEntity<ResponseOwnerDTO>> cadastrarAnunciante(
-            @RequestPart("owner")  Mono<CreateOwnerDTO> createOwnerDTO,
+    @ResponseStatus(HttpStatus.CREATED)
+    Mono<ResponseOwnerDTO> cadastrarAnunciante(
+            @RequestPart("owner") @Valid CreateOwnerDTO createOwnerDTO,
             @RequestPart("photos") Flux<FilePart> photosFlux ){
 
-        return createOwnerDTO.flatMap(
-                ownerDTO -> ownerService.cadastrarAnunciante(ownerDTO,photosFlux)
-                        .map(responseOwnerDTO ->
-                                ResponseEntity.status(HttpStatus.CREATED)
-                                        .body(responseOwnerDTO)));
+        return ownerService.cadastrarAnunciante(createOwnerDTO,photosFlux);
     }
 
     @GetMapping("/restaurantes")
@@ -44,28 +41,27 @@ public class OwnerController {
     }
 
     @GetMapping("/perfil-anunciante")
-    public Mono<ResponseEntity<ResponseOwnerDTO>> buscarPerfilOwner(@AuthenticationPrincipal Mono<String> authenticationEmail){
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<ResponseOwnerDTO> buscarPerfilOwner(@AuthenticationPrincipal Mono<String> authenticationEmail){
         return authenticationEmail
-                .flatMap(ownerService::getPerfilOwner)
-                .map(responseOwnerDTO ->
-                        ResponseEntity.ok().body(responseOwnerDTO))
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+                .switchIfEmpty(Mono.error(
+                        new AutenticacaoNecessariaException("Autenticação necessária"))
+                )
+                .flatMap(ownerService::getPerfilOwner);
     }
 
     @PutMapping("/edit-perfil")
-    public Mono<ResponseEntity<ResponseOwnerDTO>> editarAnunciante(
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<ResponseOwnerDTO> editarAnunciante(
             @AuthenticationPrincipal Mono<String> authenticationEmail,
-            @RequestPart("owner") Mono<EditOwnerDTO> editOwnerDTO,
+            @RequestPart("owner") @Valid EditOwnerDTO editOwnerDTO,
             @RequestPart("photos") Flux<FilePart> photosFlux
     ){
         return authenticationEmail
-                .flatMap(email ->
-                        editOwnerDTO.flatMap(ownerEdit ->
-                                ownerService.editarAnunciante(email,ownerEdit,photosFlux)
-                        )
-                ).map(responseOwnerDTO ->
-                        ResponseEntity.ok().body(responseOwnerDTO))
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+                .switchIfEmpty(Mono.error(
+                        new AutenticacaoNecessariaException("Autenticação necessária"))
+                )
+                .flatMap(email -> ownerService.editarAnunciante(email,editOwnerDTO,photosFlux));
     }
 
     @DeleteMapping("/advanced-settings")
@@ -75,7 +71,7 @@ public class OwnerController {
     ) {
         return authenticationEmail
                 .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Autenticação necessária"))
+                        new AutenticacaoNecessariaException("Autenticação necessária"))
                 ).flatMap(email ->
                         ownerService.deletarContaOwner(email));
     }

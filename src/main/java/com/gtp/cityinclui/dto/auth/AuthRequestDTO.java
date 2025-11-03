@@ -1,10 +1,17 @@
 package com.gtp.cityinclui.dto.auth;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Objects;
 
 public class AuthRequestDTO {
 
+    @NotBlank(message = "O E-mail é obrigatório")
+    @Email(message = "O formato do E-mail é inválido")
     private String email;
+
+    @NotBlank(message = "A senha é obrigatória")
     private String senha;
 
     public AuthRequestDTO() {

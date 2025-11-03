@@ -1,21 +1,36 @@
     package com.gtp.cityinclui.dto.owner;
 
     import com.gtp.cityinclui.entity.Owner;
+    import jakarta.validation.constraints.Email;
+    import jakarta.validation.constraints.NotBlank;
+    import jakarta.validation.constraints.Pattern;
+    import jakarta.validation.constraints.Size;
 
     import java.util.Objects;
 
     public class CreateOwnerDTO {
 
+        @NotBlank(message = "O nome do restaurante não pode estar em branco")
+        @Size(min = 2, max = 100, message = "O nome do restaurante deve ter entre 2 e 100 caracteres")
         private String nomeDoRestaurante;
 
+        @NotBlank(message = "O nome do anunciante não pode estar em branco")
+        @Size(min = 2, max = 100, message = "O nome do anunciante deve ter entre 2 e 50 caracteres")
         private String nomeDoAnunciante;
 
+        @NotBlank(message = "O cardapio deve ser informado")
         private String cardapio;
 
+        @NotBlank(message = "O email é obrigatório")
+        @Email(message = "O formato do email é inválido")
         private String email;
 
+        @NotBlank(message = "O telefone é obrigatório")
+        @Pattern(regexp = "^[0-9]{10,11}$", message = "O telefone deve conter apenas números (10 ou 11 dígitos)")
         private String telefone;
 
+        @NotBlank(message = "A senha é obrigatória")
+        @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
         private String senha;
 
         public CreateOwnerDTO() {

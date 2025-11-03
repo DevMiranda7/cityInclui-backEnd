@@ -2,6 +2,7 @@ package com.gtp.cityinclui.service.impl;
 
 import com.gtp.cityinclui.dto.auth.AuthRequestDTO;
 import com.gtp.cityinclui.dto.auth.AuthResponseDTO;
+import com.gtp.cityinclui.exception.InvalidCredentialsException;
 import com.gtp.cityinclui.repository.OwnerRepository;
 import com.gtp.cityinclui.security.JwtUtil;
 import com.gtp.cityinclui.service.AuthService;
@@ -15,12 +16,6 @@ public class AuthServiceImpl implements AuthService {
     private final OwnerRepository ownerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
-    public static class InvalidCredentialsException extends RuntimeException {
-        public InvalidCredentialsException() {
-            super("Email ou senha inválidos.");
-        }
-    }
 
     public AuthServiceImpl(OwnerRepository ownerRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.ownerRepository = ownerRepository;
@@ -37,8 +32,8 @@ public class AuthServiceImpl implements AuthService {
                         String token = jwtUtil.generateToken(owner.getEmail(), "ROLE_OWNER");
                         return Mono.just(new AuthResponseDTO(token));
                     }else{
-                        return Mono.error(new InvalidCredentialsException());
+                        return Mono.error(new InvalidCredentialsException("E-mail ou senha inválidos"));
                     }
-                }).switchIfEmpty(Mono.error(new InvalidCredentialsException()));
+                }).switchIfEmpty(Mono.error(new InvalidCredentialsException("E-mail ou senha inválidos")));
     }
 }
