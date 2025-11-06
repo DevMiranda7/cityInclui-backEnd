@@ -1,5 +1,8 @@
 // ONDE: com/gtp/cityinclui/service/impl/ClienteServiceImpl.java
 package com.gtp.cityinclui.service.impl;
+import com.gtp.cityinclui.dto.client.CreateClientDTO;
+import com.gtp.cityinclui.model.Cliente; // [ATENÇÃO 1]
+import lombok.RequiredArgsConstructor;
 
 import com.gtp.cityinclui.dto.client.CreateClienteDTO;
 import com.gtp.cityinclui.dto.client.ResponseClientDTO;
