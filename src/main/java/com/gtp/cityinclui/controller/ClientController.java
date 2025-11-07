@@ -1,6 +1,6 @@
 package com.gtp.cityinclui.controller;
 import com.gtp.cityinclui.dto.client.CreateClienteDTO;
-import com.gtp.cityinclui.dto.client.ResponseClienteDTO;
+import com.gtp.cityinclui.dto.client.ResponseClientDTO;
 import com.gtp.cityinclui.service.ClientService;
 import reactor.core.publisher.Flux;
 import com.gtp.cityinclui.service.impl.ClienteServiceImpl;
@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import com.gtp.cityinclui.dto.client.EditClienteDTO;
 import com.gtp.cityinclui.exception.AutenticacaoNecessariaException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/cityinclui")
 public class ClientController {
@@ -23,18 +22,18 @@ public class ClientController {
     }
     @PostMapping("/cadastrar-cliente")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseClienteDTO> cadastrarCliente(
+    public Mono<ResponseClientDTO> cadastrarCliente(
             @RequestBody @Valid CreateClienteDTO createClienteDTO
     ) {
         return clientService.cadastrarCliente(createClienteDTO);
     }
     @GetMapping("/clientes")
-    public Flux<ResponseClienteDTO> buscarTodosClientes() {
+    public Flux<ResponseClientDTO> buscarTodosClientes() {
         return clientService.buscarTodosClientes();
     }
     @PutMapping("/perfil-cliente")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<ResponseClienteDTO> atualizarCliente(
+    public Mono<ResponseClientDTO> atualizarCliente(
             @AuthenticationPrincipal Mono<String> authenticationEmail,
             @RequestBody @Valid EditClienteDTO editClienteDTO
     ) {
@@ -44,6 +43,19 @@ public class ClientController {
                 ))
                 .flatMap(email ->
                         clientService.atualizarCliente(email, editClienteDTO)
+                );
+    }
+    @DeleteMapping("/perfil-cliente")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deletarContaCliente(
+            @AuthenticationPrincipal Mono<String> authenticationEmail
+    ) {
+        return authenticationEmail
+                .switchIfEmpty(Mono.error(
+                        new AutenticacaoNecessariaException("Autenticação necessária para deletar a conta.")
+                ))
+                .flatMap(email ->
+                        clientService.deletarContaCliente(email)
                 );
     }
 }
