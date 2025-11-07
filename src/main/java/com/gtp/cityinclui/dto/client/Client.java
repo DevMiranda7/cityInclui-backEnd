@@ -1,14 +1,21 @@
-package com.gtp.cityinclui.entity;
+package com.gtp.cityinclui.dto.client;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.relational.core.mapping.Table; // Para R2DBC (SQL)
 @Table("clientes")
 public class Client {
+
     @Id
     private Long id; // Ou String se for Mongo/UUID
+
     private String nomeCompleto;
     private String telefone;
     private String email;
     private String senha;
+
+    // Getters e Setters
+    // (O Lombok geraria isso, mas é melhor fazer manualmente
+    // se você não está com ele configurado)
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNomeCompleto() { return nomeCompleto; }
