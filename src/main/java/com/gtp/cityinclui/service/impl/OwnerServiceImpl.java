@@ -3,12 +3,11 @@ package com.gtp.cityinclui.service.impl;
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
+import com.gtp.cityinclui.entity.Acessibilidades;
 import com.gtp.cityinclui.entity.Owner;
 import com.gtp.cityinclui.entity.PhotoRegister;
-import com.gtp.cityinclui.exception.EmailJaExistenteException;
-import com.gtp.cityinclui.exception.FormatoArquivoInvalidoException;
-import com.gtp.cityinclui.exception.LimiteDeFotosExcedidoException;
-import com.gtp.cityinclui.exception.UsuarioNaoExistenteException;
+import com.gtp.cityinclui.exception.*;
+import com.gtp.cityinclui.repository.AcessibilidadesRepository;
 import com.gtp.cityinclui.repository.OwnerRepository;
 import com.gtp.cityinclui.repository.PhotoRepository;
 import com.gtp.cityinclui.service.CloudStorageService;
@@ -31,74 +30,74 @@ public class OwnerServiceImpl implements OwnerService {
 
     private final OwnerRepository ownerRepository;
     private final PhotoRepository photoRepository;
+    private final AcessibilidadesRepository acessibilidadesRepository;
     private final CloudStorageService cloudStorageService;
     private final PasswordEncoder passwordEncoder;
     private static final List<MediaType> TIPOS_DE_IMAGEM_PERMITIDO = List.of(
             MediaType.IMAGE_JPEG,
             MediaType.IMAGE_PNG
     );
-    public OwnerServiceImpl(OwnerRepository ownerRepository, PhotoRepository photoRepository, CloudStorageService cloudStorageService, PasswordEncoder passwordEncoder) {
+    public OwnerServiceImpl(OwnerRepository ownerRepository, PhotoRepository photoRepository, AcessibilidadesRepository acessibilidadesRepository, CloudStorageService cloudStorageService, PasswordEncoder passwordEncoder) {
         this.ownerRepository = ownerRepository;
         this.photoRepository = photoRepository;
+        this.acessibilidadesRepository = acessibilidadesRepository;
         this.cloudStorageService = cloudStorageService;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Mono<ResponseOwnerDTO> cadastrarAnunciante(CreateOwnerDTO createOwnerDTO, Flux<FilePart> photos) {
-        return ownerRepository.existsByEmail(createOwnerDTO.getEmail())
-                .flatMap(exists -> {
-                    if (exists) {
-                        return Mono.error(new EmailJaExistenteException("Email já existe!"));
-                    }
-                    Owner owner = CreateOwnerDTO.toEntity(createOwnerDTO);
-                    owner.setSenha(passwordEncoder.encode(createOwnerDTO.getSenha()));
 
-                    return ownerRepository.save(owner);
-                })
-                .flatMap(ownerSave ->
-                        Mono.zip(
-                                Mono.just(ownerSave),
-                                this.processarFotos(ownerSave.getId(),photos)
-                        )
-                            )
-                            .map(tuple -> {
-                                Owner ownerFinal = tuple.getT1();
-                                List<PhotoRegister> fotosSalvas = tuple.getT2();
+        Flux<FilePart> fotosReais = photos
+                .filter(filePart -> filePart.filename() != null && !filePart.filename().isEmpty());
 
-                                ownerFinal.setFotos(fotosSalvas);
-                                return ResponseOwnerDTO.fromEntity(ownerFinal);
-                            }
-                        );
+        return validarExistenciaFotos(fotosReais)
+                .then(salvarOwner(createOwnerDTO))
+                .flatMap(ownerSalvo -> salvarFotosEAcessibilidade(ownerSalvo, createOwnerDTO, fotosReais))
+                .map(ResponseOwnerDTO::fromEntity);
     }
 
     @Override
     public Flux<ResponseOwnerDTO> restaurantesCadastrados(){
         return ownerRepository.findAll()
-                .concatMap(this::carregarFotosEConverterParaDTO);
+                .concatMap(this::carregarRelacionamentosEConverter);
     }
 
     @Override
     public Mono<ResponseOwnerDTO> getPerfilOwner(String email) {
         return ownerRepository.findByEmail(email)
-                .flatMap(this::carregarFotosEConverterParaDTO)
+                .flatMap(this::carregarRelacionamentosEConverter)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))));
     }
 
     @Override
     public Mono<ResponseOwnerDTO> editarAnunciante(String email, EditOwnerDTO editOwnerDTO, Flux<FilePart> photos) {
       return ownerRepository.findByEmail(email)
-              .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))))
-              .flatMap(ownerExistente -> atualizarCamposDeTextos(ownerExistente,editOwnerDTO))
+              .switchIfEmpty(Mono.defer(() -> Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado"))
+                      )
+              )
+              .flatMap(ownerExistente -> atualizarCamposDeTextos(ownerExistente,editOwnerDTO)
+              )
               .flatMap(ownerAtualizado -> {
                   Mono<List<PhotoRegister>> fotosFinais = orchestradorDeProcessosDeFoto(ownerAtualizado,photos);
 
-                  return Mono.zip(Mono.just(ownerAtualizado), fotosFinais);
+                  Mono<List<Acessibilidades>> acessMono = atualizarAcessibilidade(
+                          ownerAtualizado,
+                          editOwnerDTO.getAcessibilidades()
+                  );
+                  return Mono.zip(
+                          Mono.just(ownerAtualizado),
+                          fotosFinais,
+                          acessMono
+                  );
               })
               .map(tuple -> {
                   Owner owner = tuple.getT1();
                   List<PhotoRegister> fotos = tuple.getT2();
+                  List<Acessibilidades> acessibilidades = tuple.getT3();
+
                   owner.setFotos(fotos);
+                  owner.setAcessibilidades(acessibilidades);
                   return ResponseOwnerDTO.fromEntity(owner);
               });
     }
@@ -117,11 +116,73 @@ public class OwnerServiceImpl implements OwnerService {
                                 .flatMap(url -> cloudStorageService.deleteFoto(url))
                                 .then();
 
-                        Mono<Void> deletePhotos = photoRepository.deleteAll(photos).then(ownerRepository.delete(owner));
+                        Mono<Void> deleteAcessibilidades = acessibilidadesRepository.deleteByOwnerId(owner.getId());
 
-                        return deleteS3Files.then(deletePhotos);
+                        Mono<Void> deletePhotos = photoRepository.deleteAll(photos);
+
+                        return Mono.when(deleteS3Files, deleteAcessibilidades, deletePhotos)
+                                .then(ownerRepository.delete(owner));
              });
         });
+    }
+
+    private Mono<Void> validarExistenciaFotos(Flux<FilePart> fotosReais){
+        return fotosReais
+                .hasElements()
+                .flatMap(temElementos -> {
+                    if(!temElementos){
+                        return Mono.error(new FotoNecessariaException("Pelo menos uma foto é obrigatória."));
+                    }
+
+                    return Mono.empty();
+                });
+    }
+
+    private Mono<Owner> salvarOwner(CreateOwnerDTO createOwnerDTO){
+        return ownerRepository.existsByEmail(createOwnerDTO.getEmail())
+                .flatMap(existe -> {
+                    if (existe) {
+                        return Mono.error(new EmailJaExistenteException("Endereço de E-mail já tem cadastro no site!"));
+                    }
+                    Owner owner = CreateOwnerDTO.toEntity(createOwnerDTO);
+                    owner.setSenha(passwordEncoder.encode(createOwnerDTO.getSenha()));
+
+                    return ownerRepository.save(owner);
+                });
+    }
+
+    private Mono<Owner> salvarFotosEAcessibilidade(Owner ownerSalvo, CreateOwnerDTO createOwnerDTO, Flux<FilePart> fotosReais){
+        Mono<List<PhotoRegister>> fotosMono = this.processarFotos(ownerSalvo.getId(), fotosReais);
+
+        Mono<List<Acessibilidades>> acessMono = this.salvarAcessibilidade(
+                ownerSalvo.getId(),
+                createOwnerDTO.getAcessibilidades()
+        );
+
+        return Mono.zip(fotosMono,acessMono)
+                .map(tuple ->{
+                    List<PhotoRegister> fotosSalvas = tuple.getT1();
+                    List<Acessibilidades> acessSalvas = tuple.getT2();
+
+                    ownerSalvo.setFotos(fotosSalvas);
+                    ownerSalvo.setAcessibilidades(acessSalvas);
+
+                    return ownerSalvo;
+                });
+    }
+
+    private Mono<List<Acessibilidades>> salvarAcessibilidade(Long ownerId, List<String> descricoes){
+        List<String> lista = (descricoes == null) ? List.of() : descricoes;
+
+        return Flux.fromIterable(lista)
+                .map(descricao -> {
+                    Acessibilidades item = new Acessibilidades();
+                    item.setOwnerId(ownerId);
+                    item.setAcessibilidades(descricao);
+                    return item;
+                })
+                .flatMap(acessibilidadesRepository::save)
+                .collectList();
     }
 
     private Mono<Owner> atualizarCamposDeTextos(Owner ownerExistente, EditOwnerDTO editOwnerDTO){
@@ -134,11 +195,38 @@ public class OwnerServiceImpl implements OwnerService {
         if (editOwnerDTO.getCardapio() != null){
             ownerExistente.setCardapio(editOwnerDTO.getCardapio());
         }
+        if (editOwnerDTO.getDescricao() != null){
+            ownerExistente.setDescricao(editOwnerDTO.getDescricao());
+        }
         if (editOwnerDTO.getTelefone() != null){
             ownerExistente.setTelefone(editOwnerDTO.getTelefone());
         }
 
+
         return ownerRepository.save(ownerExistente);
+    }
+
+    private Mono<List<Acessibilidades>> atualizarAcessibilidade(Owner owner, List<String> novasAcessibilidades){
+
+       if (novasAcessibilidades == null){
+           return acessibilidadesRepository.findByOwnerId(owner.getId())
+                   .collectList()
+                   .defaultIfEmpty(List.of());
+       }
+
+       return acessibilidadesRepository.deleteByOwnerId(owner.getId())
+               .then(
+                       Flux.fromIterable(novasAcessibilidades)
+                               .map(descricaoAcessibilidade -> {
+                                   Acessibilidades item = new Acessibilidades();
+                                   item.setOwnerId(owner.getId());
+                                   item.setAcessibilidades(descricaoAcessibilidade);
+                                   return item;
+                               })
+                               .flatMap(acessibilidadesRepository::save)
+                               .collectList()
+                               .defaultIfEmpty(List.of())
+               );
     }
 
     private Mono<List<PhotoRegister>> orchestradorDeProcessosDeFoto(Owner owner, Flux<FilePart> photos){
@@ -189,11 +277,23 @@ public class OwnerServiceImpl implements OwnerService {
         return photoRepository.findByOwnerId(onwerId).collectList();
     }
 
-    private Mono<ResponseOwnerDTO> carregarFotosEConverterParaDTO(Owner owner){
-        return photoRepository.findByOwnerId(owner.getId())
+    private Mono<ResponseOwnerDTO> carregarRelacionamentosEConverter(Owner owner){
+        Mono<List<PhotoRegister>> fotosMono = photoRepository.findByOwnerId(owner.getId())
                 .collectList()
-                .map(fotos -> {
+                .defaultIfEmpty(List.of());
+
+        Mono<List<Acessibilidades>> acessibilidadesMono = acessibilidadesRepository.findByOwnerId(owner.getId())
+                .collectList()
+                .defaultIfEmpty(List.of());
+
+        return Mono.zip(fotosMono, acessibilidadesMono)
+                .map(tuple -> {
+                    List<PhotoRegister> fotos = tuple.getT1();
+                    List<Acessibilidades> acessibilidades = tuple.getT2();
+
                     owner.setFotos(fotos);
+                    owner.setAcessibilidades(acessibilidades);
+
                     return ResponseOwnerDTO.fromEntity(owner);
                 });
     }

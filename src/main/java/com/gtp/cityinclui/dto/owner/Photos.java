@@ -5,7 +5,6 @@ import com.gtp.cityinclui.entity.PhotoRegister;
 import java.util.Objects;
 
 public class Photos {
-
     private Long id;
     private String urlFoto;
 

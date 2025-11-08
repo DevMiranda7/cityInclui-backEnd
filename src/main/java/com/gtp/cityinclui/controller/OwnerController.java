@@ -1,5 +1,6 @@
 package com.gtp.cityinclui.controller;
 
+import com.gtp.cityinclui.dto.owner.AcessibilidadeDTO;
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;

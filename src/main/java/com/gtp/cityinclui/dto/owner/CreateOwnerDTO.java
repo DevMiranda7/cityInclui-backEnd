@@ -1,11 +1,9 @@
     package com.gtp.cityinclui.dto.owner;
 
     import com.gtp.cityinclui.entity.Owner;
-    import jakarta.validation.constraints.Email;
-    import jakarta.validation.constraints.NotBlank;
-    import jakarta.validation.constraints.Pattern;
-    import jakarta.validation.constraints.Size;
+    import jakarta.validation.constraints.*;
 
+    import java.util.List;
     import java.util.Objects;
 
     public class CreateOwnerDTO {
@@ -20,6 +18,13 @@
 
         @NotBlank(message = "O cardapio deve ser informado")
         private String cardapio;
+
+        @NotBlank(message = "Descrição do restaurante é obrigatória, isso melhora o nosso recurso de acessibilidade")
+        @Size(min = 100, max = 500, message = "A descrição do restaurante deverá ter entre 100 e máximo 500 caracteres")
+        private String descricao;
+
+        @NotEmpty(message = "É obrigatório cadastrar pelo menos uma acessibilidade")
+        private List<String> acessibilidades;
 
         @NotBlank(message = "O email é obrigatório")
         @Email(message = "O formato do email é inválido")
@@ -36,10 +41,12 @@
         public CreateOwnerDTO() {
         }
 
-        public CreateOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String email, String telefone, String senha) {
+        public CreateOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<String> acessibilidades, String email, String telefone, String senha) {
             this.nomeDoRestaurante = nomeDoRestaurante;
             this.nomeDoAnunciante = nomeDoAnunciante;
             this.cardapio = cardapio;
+            this.descricao = descricao;
+            this.acessibilidades = acessibilidades;
             this.email = email;
             this.telefone = telefone;
             this.senha = senha;
@@ -50,6 +57,7 @@
             owner.setNomeDoRestaurante(createOwnerDTO.getNomeDoRestaurante());
             owner.setNomeDoAnunciante(createOwnerDTO.getNomeDoAnunciante());
             owner.setCardapio(createOwnerDTO.getCardapio());
+            owner.setDescricao(createOwnerDTO.getDescricao());
             owner.setEmail(createOwnerDTO.getEmail());
             owner.setTelefone(createOwnerDTO.getTelefone());
             owner.setSenha(createOwnerDTO.getSenha());
@@ -79,6 +87,22 @@
 
         public void setCardapio(String cardapio) {
             this.cardapio = cardapio;
+        }
+
+        public String getDescricao() {
+            return descricao;
+        }
+
+        public void setDescricao(String descricao) {
+            this.descricao = descricao;
+        }
+
+        public List<String> getAcessibilidades() {
+            return acessibilidades;
+        }
+
+        public void setAcessibilidades(List<String> acessibilidades) {
+            this.acessibilidades = acessibilidades;
         }
 
         public String getEmail() {
