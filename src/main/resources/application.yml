@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
   r2dbc:
     url: r2dbc:postgresql://localhost:5433/dbcity_gtp
     username: postgres
@@ -11,13 +15,13 @@ spring:
 
 aws:
   s3:
-    region:
-    access-key:
-    secret-key:
-    bucket-name:
+    region: us-east-2
+    access-key: AKIAVKPK4SWI6GWPEL7B
+    secret-key: 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
+    bucket-name: registro-fotos-city-inclui
 
 
 jwt:
-  secret:
+  secret: 66DE04BACC8910E272421DC20AE44307C539F1CA120C11A76A1D0E3FD953D450
   expiration:
-    ms:
+    ms: 864000000

@@ -8,7 +8,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Table(name = "owner")
 public class Owner {
@@ -23,6 +22,11 @@ public class Owner {
     private String nomeDoAnunciante;
 
     private String cardapio;
+
+    private String descricao;
+
+    @Transient
+    private List<Acessibilidades> acessibilidades;
 
     private String email;
 
@@ -45,11 +49,13 @@ public class Owner {
     public Owner() {
     }
 
-    public Owner(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String email, String telefone, String senha, List<PhotoRegister> fotos) {
+    public Owner(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<Acessibilidades> acessibilidades, String email, String telefone, String senha, List<PhotoRegister> fotos) {
         this.id = id;
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
         this.cardapio = cardapio;
+        this.descricao = descricao;
+        this.acessibilidades = acessibilidades;
         this.email = email;
         this.telefone = telefone;
         this.senha = senha;
@@ -86,6 +92,22 @@ public class Owner {
 
     public void setCardapio(String cardapio) {
         this.cardapio = cardapio;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public List<Acessibilidades> getAcessibilidades() {
+        return acessibilidades;
+    }
+
+    public void setAcessibilidades(List<Acessibilidades> acessibilidades) {
+        this.acessibilidades = acessibilidades;
     }
 
     public String getEmail() {
@@ -144,33 +166,5 @@ public class Owner {
         this.tokenDeExpiracao = tokenDeExpiracao;
     }
 
-    @Override
-    public String toString() {
-        return "Owner{" +
-                "id=" + id +
-                ", nomeDoRestaurante='" + nomeDoRestaurante + '\'' +
-                ", nomeDoAnunciante='" + nomeDoAnunciante + '\'' +
-                ", cardapio=" + cardapio +
-                ", email='" + email + '\'' +
-                ", telefone='" + telefone + '\'' +
-                ", senha='" + senha + '\'' +
-                ", fotos=" + fotos +
-                ", tokenRecuperacao='" + tokenRecuperacao + '\'' +
-                ", tokenDeExpiracao=" + tokenDeExpiracao +
-                ", dataDeCadastro=" + dataDeCadastro +
-                '}';
-    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Owner owner = (Owner) o;
-        return Objects.equals(id, owner.id) && Objects.equals(nomeDoRestaurante, owner.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, owner.nomeDoAnunciante) && Objects.equals(cardapio, owner.cardapio) && Objects.equals(email, owner.email) && Objects.equals(telefone, owner.telefone) && Objects.equals(senha, owner.senha) && Objects.equals(fotos, owner.fotos) && Objects.equals(tokenRecuperacao, owner.tokenRecuperacao) && Objects.equals(tokenDeExpiracao, owner.tokenDeExpiracao) && Objects.equals(dataDeCadastro, owner.dataDeCadastro);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, nomeDoRestaurante, nomeDoAnunciante, cardapio, email, telefone, senha, fotos, tokenRecuperacao, tokenDeExpiracao, dataDeCadastro);
-    }
 }

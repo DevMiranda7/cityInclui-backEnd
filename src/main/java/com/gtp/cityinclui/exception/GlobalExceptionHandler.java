@@ -37,9 +37,8 @@ public class GlobalExceptionHandler {
                 .getAllErrors()
                 .stream()
                 .map(error -> {
-                    String fieldName = ((FieldError) error).getField();
                     String errorMessage = error.getDefaultMessage();
-                    return fieldName + ": " + errorMessage;
+                    return errorMessage;
                 })
                 .collect(Collectors.toList());
 
@@ -133,6 +132,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(LimiteDeFotosExcedidoException.class)
     public Mono<ResponseEntity<ErrorResponseDTO>> LimiteDeFotosExcedidoHandlerException(RuntimeException ex){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO,status)
+        );
+    }
+
+    @ExceptionHandler(FotoNecessariaException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> FotoNecessariaHandlerException(RuntimeException ex){
         HttpStatus status = HttpStatus.BAD_REQUEST;
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                 ex.getMessage(),
