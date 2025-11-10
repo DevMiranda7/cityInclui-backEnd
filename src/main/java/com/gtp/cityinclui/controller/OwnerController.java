@@ -1,5 +1,4 @@
 package com.gtp.cityinclui.controller;
-
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
@@ -13,33 +12,24 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.http.HttpStatus;
-
-
 @RestController
 @RequestMapping("/cityinclui")
 public class OwnerController {
-
     private final OwnerService ownerService;
-
     public OwnerController(OwnerServiceImpl ownerServiceImpl){
         this.ownerService = ownerServiceImpl;
-
     }
-
     @PostMapping("/cadastrar-anunciante")
     @ResponseStatus(HttpStatus.CREATED)
     Mono<ResponseOwnerDTO> cadastrarAnunciante(
             @RequestPart("owner") @Valid CreateOwnerDTO createOwnerDTO,
             @RequestPart("photos") Flux<FilePart> photosFlux ){
-
         return ownerService.cadastrarAnunciante(createOwnerDTO,photosFlux);
     }
-
     @GetMapping("/restaurantes")
     Flux<ResponseOwnerDTO> restaurantesCadastrados(){
        return ownerService.restaurantesCadastrados();
     }
-
     @GetMapping("/perfil-anunciante")
     @ResponseStatus(HttpStatus.OK)
     public Mono<ResponseOwnerDTO> buscarPerfilOwner(@AuthenticationPrincipal Mono<String> authenticationEmail){
@@ -49,7 +39,6 @@ public class OwnerController {
                 )
                 .flatMap(ownerService::getPerfilOwner);
     }
-
     @PutMapping("/edit-perfil")
     @ResponseStatus(HttpStatus.OK)
     public Mono<ResponseOwnerDTO> editarAnunciante(
@@ -63,7 +52,6 @@ public class OwnerController {
                 )
                 .flatMap(email -> ownerService.editarAnunciante(email,editOwnerDTO,photosFlux));
     }
-
     @DeleteMapping("/advanced-settings")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deletarConta(
@@ -75,5 +63,4 @@ public class OwnerController {
                 ).flatMap(email ->
                         ownerService.deletarContaOwner(email));
     }
-
 }

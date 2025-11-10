@@ -1,7 +1,7 @@
 package com.gtp.cityinclui.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-@Table("clientes")
+@Table("clients")
 public class Client {
     @Id
     private Long id; // Ou String se for Mongo/UUID

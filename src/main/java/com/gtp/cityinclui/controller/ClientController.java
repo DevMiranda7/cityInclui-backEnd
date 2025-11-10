@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/cityinclui")
 public class ClientController {
-
     private final ClientService clientService;
     public ClientController(ClienteServiceImpl clientServiceImpl) {
         this.clientService = clientServiceImpl;
