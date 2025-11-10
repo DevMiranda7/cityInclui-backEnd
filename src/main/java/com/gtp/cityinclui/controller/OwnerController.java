@@ -1,6 +1,5 @@
 package com.gtp.cityinclui.controller;
 
-import com.gtp.cityinclui.dto.owner.AcessibilidadeDTO;
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
@@ -39,6 +38,12 @@ public class OwnerController {
     @GetMapping("/restaurantes")
     Flux<ResponseOwnerDTO> restaurantesCadastrados(){
        return ownerService.restaurantesCadastrados();
+    }
+
+    @GetMapping("/restaurante/{ownerId}")
+    @ResponseStatus(HttpStatus.OK)
+    Mono<ResponseOwnerDTO> restauranteCadastradoPerfil(@PathVariable Long ownerId){
+        return ownerService.restauranteCadastradoPerfil(ownerId);
     }
 
     @GetMapping("/perfil-anunciante")
