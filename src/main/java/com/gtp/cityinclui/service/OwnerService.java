@@ -1,6 +1,5 @@
 package com.gtp.cityinclui.service;
 
-import com.gtp.cityinclui.dto.owner.AcessibilidadeDTO;
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
@@ -13,6 +12,8 @@ public interface OwnerService {
     Mono<ResponseOwnerDTO> cadastrarAnunciante(CreateOwnerDTO createOwnerDTO, Flux<FilePart> photos);
 
     Flux<ResponseOwnerDTO> restaurantesCadastrados();
+
+    Mono<ResponseOwnerDTO> restauranteCadastradoPerfil(Long ownerId);
 
     Mono<ResponseOwnerDTO> getPerfilOwner(String email);
 

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ResponseOwnerDTO {
+    private Long id;
     private String nomeDoRestaurante;
     private String nomeDoAnunciante;
     private String cardapio;
@@ -19,7 +20,8 @@ public class ResponseOwnerDTO {
     public ResponseOwnerDTO() {
     }
 
-    public ResponseOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, String email, String telefone, List<Photos> photos, List<AcessibilidadeDTO> acessibilidadeDTO) {
+    public ResponseOwnerDTO(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, String email, String telefone, List<Photos> photos, List<AcessibilidadeDTO> acessibilidadeDTO) {
+        this.id = id;
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
         this.cardapio = cardapio;
@@ -32,6 +34,7 @@ public class ResponseOwnerDTO {
 
     public static ResponseOwnerDTO fromEntity(Owner owner){
         ResponseOwnerDTO responseOwnerDTO = new ResponseOwnerDTO();
+        responseOwnerDTO.setId(owner.getId());
         responseOwnerDTO.setNomeDoRestaurante(owner.getNomeDoRestaurante());
         responseOwnerDTO.setNomeDoAnunciante(owner.getNomeDoAnunciante());
         responseOwnerDTO.setCardapio(owner.getCardapio());
@@ -55,6 +58,14 @@ public class ResponseOwnerDTO {
         }
 
         return responseOwnerDTO;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNomeDoRestaurante() {
