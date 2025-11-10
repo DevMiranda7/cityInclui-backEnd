@@ -64,6 +64,12 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
+    public Mono<ResponseOwnerDTO> restauranteCadastradoPerfil(Long ownerId) {
+        return ownerRepository.findById(ownerId).switchIfEmpty(Mono.error(new UsuarioNaoExistenteException("Usuário não encontrado")))
+                .flatMap(this::carregarRelacionamentosEConverter);
+    }
+
+    @Override
     public Mono<ResponseOwnerDTO> getPerfilOwner(String email) {
         return ownerRepository.findByEmail(email)
                 .flatMap(this::carregarRelacionamentosEConverter)
