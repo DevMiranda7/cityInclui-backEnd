@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Table(name = "owner")
-public class Owner {
+public class RestaurantOwner {
 
     @Id
     private Long id;
@@ -49,10 +49,10 @@ public class Owner {
     @Column("data_cadastro")
     private LocalDateTime dataDeCadastro;
 
-    public Owner() {
+    public RestaurantOwner() {
     }
 
-    public Owner(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<Accessibility> acessibilidades, String email, String telefone, String senha, List<Review> avaliacoes, List<PhotoRegister> fotos) {
+    public RestaurantOwner(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<Accessibility> acessibilidades, String email, String telefone, String senha, List<Review> avaliacoes, List<PhotoRegister> fotos) {
         this.id = id;
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;

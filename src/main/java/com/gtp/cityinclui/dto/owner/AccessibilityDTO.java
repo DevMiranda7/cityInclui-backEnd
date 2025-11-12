@@ -1,26 +1,26 @@
 package com.gtp.cityinclui.dto.owner;
 
-import com.gtp.cityinclui.entity.Acessibilidades;
+import com.gtp.cityinclui.entity.Accessibility;
 
 import java.util.Objects;
 
-public class AcessibilidadeDTO {
+public class AccessibilityDTO {
     private Long id;
     private String acessibilidade;
 
-    public AcessibilidadeDTO() {
+    public AccessibilityDTO() {
     }
 
-    public AcessibilidadeDTO(Long id, String acessibilidade) {
+    public AccessibilityDTO(Long id, String acessibilidade) {
         this.id = id;
         this.acessibilidade = acessibilidade;
     }
 
-    public static AcessibilidadeDTO fromEntity(Acessibilidades acessibilidades){
-        AcessibilidadeDTO acessibilidadeDTO = new AcessibilidadeDTO();
-        acessibilidadeDTO.setId(acessibilidades.getId());
-        acessibilidadeDTO.setAcessibilidade(acessibilidades.getAcessibilidades());
-        return acessibilidadeDTO;
+    public static AccessibilityDTO fromEntity(Accessibility accessibility){
+        AccessibilityDTO accessibilityDTO = new AccessibilityDTO();
+        accessibilityDTO.setId(accessibility.getId());
+        accessibilityDTO.setAcessibilidade(accessibility.getAcessibilidades());
+        return accessibilityDTO;
     }
 
     public Long getId() {
@@ -51,7 +51,7 @@ public class AcessibilidadeDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AcessibilidadeDTO that = (AcessibilidadeDTO) o;
+        AccessibilityDTO that = (AccessibilityDTO) o;
         return Objects.equals(id, that.id) && Objects.equals(acessibilidade, that.acessibilidade);
     }
 

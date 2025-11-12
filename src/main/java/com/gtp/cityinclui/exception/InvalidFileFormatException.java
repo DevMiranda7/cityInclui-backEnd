@@ -1,7 +1,7 @@
 package com.gtp.cityinclui.exception;
 
-public class FormatoArquivoInvalidoException extends RuntimeException{
-    public FormatoArquivoInvalidoException(String message) {
+public class InvalidFileFormatException extends RuntimeException{
+    public InvalidFileFormatException(String message) {
         super(message);
     }
 }

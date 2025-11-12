@@ -4,23 +4,23 @@ import com.gtp.cityinclui.entity.PhotoRegister;
 
 import java.util.Objects;
 
-public class Photos {
+public class RestaurantPhotoDTO {
     private Long id;
     private String urlFoto;
 
-    public Photos() {
+    public RestaurantPhotoDTO() {
     }
 
-    public Photos(Long id, String urlFoto) {
+    public RestaurantPhotoDTO(Long id, String urlFoto) {
         this.id = id;
         this.urlFoto = urlFoto;
     }
 
-    public static Photos fromEntity(PhotoRegister photoRegister){
-        Photos photos = new Photos();
-        photos.setId(photoRegister.getId());
-        photos.setUrlFoto(photoRegister.getUrlFoto());
-        return photos;
+    public static RestaurantPhotoDTO fromEntity(PhotoRegister photoRegister){
+        RestaurantPhotoDTO restaurantPhotoDTO = new RestaurantPhotoDTO();
+        restaurantPhotoDTO.setId(photoRegister.getId());
+        restaurantPhotoDTO.setUrlFoto(photoRegister.getUrlFoto());
+        return restaurantPhotoDTO;
     }
 
     public Long getId() {
@@ -51,8 +51,8 @@ public class Photos {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Photos photos = (Photos) o;
-        return Objects.equals(id, photos.id) && Objects.equals(urlFoto, photos.urlFoto);
+        RestaurantPhotoDTO restaurantPhotoDTO = (RestaurantPhotoDTO) o;
+        return Objects.equals(id, restaurantPhotoDTO.id) && Objects.equals(urlFoto, restaurantPhotoDTO.urlFoto);
     }
 
     @Override

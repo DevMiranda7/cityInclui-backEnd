@@ -1,7 +1,7 @@
 package com.gtp.cityinclui.exception;
 
-public class FotoNecessariaException extends RuntimeException{
-    public FotoNecessariaException(String message) {
+public class PhotoRequiredException extends RuntimeException{
+    public PhotoRequiredException(String message) {
         super(message);
     }
 }

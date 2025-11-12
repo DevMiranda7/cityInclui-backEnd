@@ -1,10 +1,10 @@
 package com.gtp.cityinclui.controller;
 
-import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
-import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
+import com.gtp.cityinclui.dto.owner.CreateRestaurantOwnerDTO;
+import com.gtp.cityinclui.dto.owner.UpdateRestaurantOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
-import com.gtp.cityinclui.exception.AutenticacaoNecessariaException;
-import com.gtp.cityinclui.service.OwnerService;
+import com.gtp.cityinclui.exception.AuthenticationRequiredException;
+import com.gtp.cityinclui.service.RestaurantOwnerService;
 import jakarta.validation.Valid;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,69 +16,69 @@ import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/cityinclui")
-public class OwnerController {
+public class RestaurantOwnerController {
 
-    private final OwnerService ownerService;
+    private final RestaurantOwnerService restaurantOwnerService;
 
-    public OwnerController(OwnerService ownerService){
-        this.ownerService = ownerService;
+    public RestaurantOwnerController(RestaurantOwnerService restaurantOwnerService){
+        this.restaurantOwnerService = restaurantOwnerService;
 
     }
 
     @PostMapping("/cadastrar-anunciante")
     @ResponseStatus(HttpStatus.CREATED)
-    Mono<ResponseOwnerDTO> cadastrarAnunciante(
-            @RequestPart("owner") @Valid CreateOwnerDTO createOwnerDTO,
+    Mono<ResponseOwnerDTO> createOwner(
+            @RequestPart("owner") @Valid CreateRestaurantOwnerDTO createRestaurantOwnerDTO,
             @RequestPart("photos") Flux<FilePart> photosFlux ){
 
-        return ownerService.cadastrarAnunciante(createOwnerDTO,photosFlux);
+        return restaurantOwnerService.registerOwner(createRestaurantOwnerDTO,photosFlux);
     }
 
     @GetMapping("/restaurantes")
-    Flux<ResponseOwnerDTO> restaurantesCadastrados(){
-       return ownerService.restaurantesCadastrados();
+    Flux<ResponseOwnerDTO> getAllOwners(){
+       return restaurantOwnerService.getAllOwners();
     }
 
     @GetMapping("/restaurante/{ownerId}")
     @ResponseStatus(HttpStatus.OK)
-    Mono<ResponseOwnerDTO> restauranteCadastradoPerfil(@PathVariable Long ownerId){
-        return ownerService.restauranteCadastradoPerfil(ownerId);
+    Mono<ResponseOwnerDTO> getOwnerById(@PathVariable Long ownerId){
+        return restaurantOwnerService.getOwnerById(ownerId);
     }
 
     @GetMapping("/perfil-anunciante")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<ResponseOwnerDTO> buscarPerfilOwner(@AuthenticationPrincipal Mono<String> authenticationEmail){
+    public Mono<ResponseOwnerDTO> getAuthenticatedOwnerProfile(@AuthenticationPrincipal Mono<String> authenticationEmail){
         return authenticationEmail
                 .switchIfEmpty(Mono.error(
-                        new AutenticacaoNecessariaException("Autenticação necessária"))
+                        new AuthenticationRequiredException("Autenticação necessária"))
                 )
-                .flatMap(ownerService::getPerfilOwner);
+                .flatMap(restaurantOwnerService::getOwnerProfile);
     }
 
-    @PutMapping("/edit-perfil")
+    @PutMapping("/editar-perfil")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<ResponseOwnerDTO> editarAnunciante(
+    public Mono<ResponseOwnerDTO> updateOwnerProfile(
             @AuthenticationPrincipal Mono<String> authenticationEmail,
-            @RequestPart("owner") @Valid EditOwnerDTO editOwnerDTO,
+            @RequestPart("owner") @Valid UpdateRestaurantOwnerDTO updateRestaurantOwnerDTO,
             @RequestPart("photos") Flux<FilePart> photosFlux
     ){
         return authenticationEmail
                 .switchIfEmpty(Mono.error(
-                        new AutenticacaoNecessariaException("Autenticação necessária"))
+                        new AuthenticationRequiredException("Autenticação necessária"))
                 )
-                .flatMap(email -> ownerService.editarAnunciante(email,editOwnerDTO,photosFlux));
+                .flatMap(email -> restaurantOwnerService.updateOwner(email, updateRestaurantOwnerDTO,photosFlux));
     }
 
-    @DeleteMapping("/advanced-settings")
+    @DeleteMapping("/conta-delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deletarConta(
+    public Mono<Void> deleteOwnerAccount(
             @AuthenticationPrincipal Mono<String> authenticationEmail
     ) {
         return authenticationEmail
                 .switchIfEmpty(Mono.error(
-                        new AutenticacaoNecessariaException("Autenticação necessária"))
+                        new AuthenticationRequiredException("Autenticação necessária"))
                 ).flatMap(email ->
-                        ownerService.deletarContaOwner(email));
+                        restaurantOwnerService.deleteOwnerAccount(email));
     }
 
 }

@@ -6,8 +6,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 @Repository
 
-public interface OwnerRepository extends ReactiveCrudRepository<RestaurantOwner, Long > {
-
+public interface RestaurantOwnerRepository extends ReactiveCrudRepository<RestaurantOwner, Long > {
     Mono<Boolean> existsByEmail(String email);
 
     Mono<RestaurantOwner> findByEmail(String email);

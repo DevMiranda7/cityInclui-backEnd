@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.util.Objects;
 
 @Table(name = "Acessibilidade")
-public class Acessibilidades {
+public class Accessibility {
 
     @Id
     private Long id;
@@ -18,10 +18,10 @@ public class Acessibilidades {
     @Column("acessibilidades")
     private String acessibilidades;
 
-    public Acessibilidades() {
+    public Accessibility() {
     }
 
-    public Acessibilidades(Long id, Long ownerId, String acessibilidades) {
+    public Accessibility(Long id, Long ownerId, String acessibilidades) {
         this.id = id;
         this.ownerId = ownerId;
         this.acessibilidades = acessibilidades;
@@ -64,7 +64,7 @@ public class Acessibilidades {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Acessibilidades that = (Acessibilidades) o;
+        Accessibility that = (Accessibility) o;
         return Objects.equals(id, that.id) && Objects.equals(ownerId, that.ownerId) && Objects.equals(acessibilidades, that.acessibilidades);
     }
 

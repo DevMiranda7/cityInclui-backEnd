@@ -7,17 +7,17 @@ import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface OwnerService {
+public interface RestaurantOwnerService {
 
-    Mono<ResponseOwnerDTO> cadastrarAnunciante(CreateRestaurantOwnerDTO createRestaurantOwnerDTO, Flux<FilePart> photos);
+    Mono<ResponseOwnerDTO> registerOwner(CreateRestaurantOwnerDTO createRestaurantOwnerDTO, Flux<FilePart> photos);
 
-    Flux<ResponseOwnerDTO> restaurantesCadastrados();
+    Flux<ResponseOwnerDTO> getAllOwners();
 
-    Mono<ResponseOwnerDTO> restauranteCadastradoPerfil(Long ownerId);
+    Mono<ResponseOwnerDTO> getOwnerById(Long ownerId);
 
-    Mono<ResponseOwnerDTO> getPerfilOwner(String email);
+    Mono<ResponseOwnerDTO> getOwnerProfile(String email);
 
-    Mono<ResponseOwnerDTO> editarAnunciante(String email, UpdateRestaurantOwnerDTO updateRestaurantOwnerDTO, Flux<FilePart> photos);
+    Mono<ResponseOwnerDTO> updateOwner(String email, UpdateRestaurantOwnerDTO updateRestaurantOwnerDTO, Flux<FilePart> photos);
 
-    Mono<Void> deletarContaOwner(String email);
+    Mono<Void> deleteOwnerAccount(String email);
 }

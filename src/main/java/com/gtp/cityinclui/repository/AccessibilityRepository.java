@@ -7,7 +7,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface AcessibilidadesRepository extends ReactiveCrudRepository<Accessibility, Long > {
+public interface AccessibilityRepository extends ReactiveCrudRepository<Accessibility, Long > {
     Flux<Accessibility> findByOwnerId(Long ownerId);
+
     Mono<Void> deleteByOwnerId(Long ownerId);
 }

@@ -1,12 +1,12 @@
     package com.gtp.cityinclui.dto.owner;
 
-    import com.gtp.cityinclui.entity.Owner;
+    import com.gtp.cityinclui.entity.RestaurantOwner;
     import jakarta.validation.constraints.*;
 
     import java.util.List;
     import java.util.Objects;
 
-    public class CreateOwnerDTO {
+    public class CreateRestaurantOwnerDTO {
 
         @NotBlank(message = "O nome do restaurante não pode estar em branco")
         @Size(min = 2, max = 100, message = "O nome do restaurante deve ter entre 2 e 100 caracteres")
@@ -38,10 +38,10 @@
         @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
         private String senha;
 
-        public CreateOwnerDTO() {
+        public CreateRestaurantOwnerDTO() {
         }
 
-        public CreateOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<String> acessibilidades, String email, String telefone, String senha) {
+        public CreateRestaurantOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<String> acessibilidades, String email, String telefone, String senha) {
             this.nomeDoRestaurante = nomeDoRestaurante;
             this.nomeDoAnunciante = nomeDoAnunciante;
             this.cardapio = cardapio;
@@ -52,17 +52,17 @@
             this.senha = senha;
         }
 
-        public static Owner toEntity(CreateOwnerDTO createOwnerDTO){
-            Owner owner = new Owner();
-            owner.setNomeDoRestaurante(createOwnerDTO.getNomeDoRestaurante());
-            owner.setNomeDoAnunciante(createOwnerDTO.getNomeDoAnunciante());
-            owner.setCardapio(createOwnerDTO.getCardapio());
-            owner.setDescricao(createOwnerDTO.getDescricao());
-            owner.setEmail(createOwnerDTO.getEmail());
-            owner.setTelefone(createOwnerDTO.getTelefone());
-            owner.setSenha(createOwnerDTO.getSenha());
+        public static RestaurantOwner toEntity(CreateRestaurantOwnerDTO createRestaurantOwnerDTO){
+            RestaurantOwner restaurantOwner = new RestaurantOwner();
+            restaurantOwner.setNomeDoRestaurante(createRestaurantOwnerDTO.getNomeDoRestaurante());
+            restaurantOwner.setNomeDoAnunciante(createRestaurantOwnerDTO.getNomeDoAnunciante());
+            restaurantOwner.setCardapio(createRestaurantOwnerDTO.getCardapio());
+            restaurantOwner.setDescricao(createRestaurantOwnerDTO.getDescricao());
+            restaurantOwner.setEmail(createRestaurantOwnerDTO.getEmail());
+            restaurantOwner.setTelefone(createRestaurantOwnerDTO.getTelefone());
+            restaurantOwner.setSenha(createRestaurantOwnerDTO.getSenha());
 
-            return owner ;
+            return restaurantOwner;
         }
 
         public String getNomeDoRestaurante() {
@@ -145,7 +145,7 @@
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            CreateOwnerDTO that = (CreateOwnerDTO) o;
+            CreateRestaurantOwnerDTO that = (CreateRestaurantOwnerDTO) o;
             return Objects.equals(nomeDoRestaurante, that.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, that.nomeDoAnunciante) && Objects.equals(cardapio, that.cardapio) && Objects.equals(email, that.email) && Objects.equals(telefone, that.telefone) && Objects.equals(senha, that.senha);
         }
 

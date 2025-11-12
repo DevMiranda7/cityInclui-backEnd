@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
 
-public class EditOwnerDTO {
+public class UpdateRestaurantOwnerDTO {
 
     @Size(min = 2, max = 100, message = "O nome do restaurante deve ter entre 2 e 100 caracteres")
     private String nomeDoRestaurante;
@@ -24,10 +24,10 @@ public class EditOwnerDTO {
     @Pattern(regexp = "^[0-9]{10,11}$", message = "O telefone deve conter apenas números (10 ou 11 dígitos)")
     private String telefone;
 
-    public EditOwnerDTO() {
+    public UpdateRestaurantOwnerDTO() {
     }
 
-    public EditOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<String> acessibilidades, String telefone) {
+    public UpdateRestaurantOwnerDTO(String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<String> acessibilidades, String telefone) {
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
         this.cardapio = cardapio;
@@ -100,7 +100,7 @@ public class EditOwnerDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        EditOwnerDTO that = (EditOwnerDTO) o;
+        UpdateRestaurantOwnerDTO that = (UpdateRestaurantOwnerDTO) o;
         return Objects.equals(nomeDoRestaurante, that.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, that.nomeDoAnunciante) && Objects.equals(cardapio, that.cardapio) && Objects.equals(descricao, that.descricao) && Objects.equals(acessibilidades, that.acessibilidades) && Objects.equals(telefone, that.telefone);
     }
 

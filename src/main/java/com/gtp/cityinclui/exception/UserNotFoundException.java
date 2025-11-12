@@ -1,7 +1,7 @@
 package com.gtp.cityinclui.exception;
 
-public class UsuarioNaoExistenteException extends RuntimeException {
-    public UsuarioNaoExistenteException(String message) {
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
         super(message);
     }
 }

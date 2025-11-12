@@ -1,7 +1,7 @@
 package com.gtp.cityinclui.exception;
 
-public class EmailJaExistenteException extends RuntimeException {
-    public EmailJaExistenteException(String message) {
+public class EmailAlreadyExistsException extends RuntimeException {
+    public EmailAlreadyExistsException(String message) {
         super(message);
     }
 }

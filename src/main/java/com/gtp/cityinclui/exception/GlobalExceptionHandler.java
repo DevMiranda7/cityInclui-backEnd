@@ -3,7 +3,6 @@ package com.gtp.cityinclui.exception;
 import com.gtp.cityinclui.errorDTO.ErrorResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -15,8 +14,8 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EmailJaExistenteException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> emailJaExistenteHandlerException(RuntimeException ex){
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> emailAlreadyExistsHandlerException(RuntimeException ex){
 
         HttpStatus status = HttpStatus.CONFLICT;
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
@@ -29,7 +28,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> webExchangeBindHandlerExcepion(WebExchangeBindException ex){
+    public Mono<ResponseEntity<ErrorResponseDTO>> webExchangeBindHandlerException(WebExchangeBindException ex){
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
@@ -67,7 +66,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> InvalidCredentialsHandlerException(RuntimeException ex){
+    public Mono<ResponseEntity<ErrorResponseDTO>> invalidCredentialsHandlerException(RuntimeException ex){
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                 ex.getMessage(),
@@ -79,48 +78,109 @@ public class GlobalExceptionHandler {
 
     }
 
-    @ExceptionHandler(UsuarioNaoExistenteException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> UsuarioNaoExistenteHandlerException(RuntimeException ex){
+    @ExceptionHandler(UserNotFoundException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> userNotFoundHandlerException(RuntimeException ex){
 
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO, status)
+        );
+    }
+
+    @ExceptionHandler(AuthenticationRequiredException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> authenticationRequiredHandlerException(RuntimeException ex){
+
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO, status)
+        );
+    }
+
+    @ExceptionHandler(MissingDataException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> missingDataHandlerException(RuntimeException ex){
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO, status)
+        );
+    }
+
+    @ExceptionHandler(InvalidFileFormatException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> invalidFileFormatHandlerException(RuntimeException ex){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO,status)
+        );
+    }
+
+    @ExceptionHandler(PhotoLimitExceededException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> photoLimitExceededHandlerException(RuntimeException ex){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO,status)
+        );
+    }
+
+    @ExceptionHandler(PhotoRequiredException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> photoRequiredHandlerException(RuntimeException ex){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO,status)
+        );
+    }
+
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> reviewAlreadyExistsHandlerException(RuntimeException ex){
+        HttpStatus status = HttpStatus.CONFLICT;
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
+                ex.getMessage(),
+                status.value()
+        );
+        return Mono.just(
+                new ResponseEntity<>(errorResponseDTO,status)
+        );
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> reviewNotFoundHandlerException(RuntimeException ex){
         HttpStatus status = HttpStatus.NOT_FOUND;
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                 ex.getMessage(),
                 status.value()
         );
         return Mono.just(
-                new ResponseEntity<>(errorResponseDTO, status)
+                new ResponseEntity<>(errorResponseDTO,status)
         );
     }
 
-    @ExceptionHandler(AutenticacaoNecessariaException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> AutenticacaoNecessariaHandlerException(RuntimeException ex){
-
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
-        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
-                ex.getMessage(),
-                status.value()
-        );
-        return Mono.just(
-                new ResponseEntity<>(errorResponseDTO, status)
-        );
-    }
-
-    @ExceptionHandler(DadosEmFaltaException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> DadosEmFaltaHandlerException(RuntimeException ex){
-
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
-                ex.getMessage(),
-                status.value()
-        );
-        return Mono.just(
-                new ResponseEntity<>(errorResponseDTO, status)
-        );
-    }
-
-    @ExceptionHandler(FormatoArquivoInvalidoException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> FormatoArquivoInvalidoHandlerException(RuntimeException ex){
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+    @ExceptionHandler(InvalidUserException.class)
+    public Mono<ResponseEntity<ErrorResponseDTO>> invalidUserHandlerException(RuntimeException ex){
+        HttpStatus status = HttpStatus.NOT_FOUND;
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                 ex.getMessage(),
                 status.value()
@@ -129,29 +189,4 @@ public class GlobalExceptionHandler {
                 new ResponseEntity<>(errorResponseDTO,status)
         );
     }
-
-    @ExceptionHandler(LimiteDeFotosExcedidoException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> LimiteDeFotosExcedidoHandlerException(RuntimeException ex){
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
-                ex.getMessage(),
-                status.value()
-        );
-        return Mono.just(
-                new ResponseEntity<>(errorResponseDTO,status)
-        );
-    }
-
-    @ExceptionHandler(FotoNecessariaException.class)
-    public Mono<ResponseEntity<ErrorResponseDTO>> FotoNecessariaHandlerException(RuntimeException ex){
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
-                ex.getMessage(),
-                status.value()
-        );
-        return Mono.just(
-                new ResponseEntity<>(errorResponseDTO,status)
-        );
-    }
-
 }

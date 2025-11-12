@@ -31,19 +31,19 @@ public class CloudStorageServiceImpl implements CloudStorageService {
     }
 
     @Override
-    public Mono<String> uploadFoto(byte[] dadosFoto, String nomeArquivo, String contentTipo) {
+    public Mono<String> uploadPhoto(byte[] photoDates, String fileName, String contentType) {
         PutObjectRequest request= PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(nomeArquivo)
-                .contentType(contentTipo)
-                .contentLength((long) dadosFoto.length)
+                .key(fileName)
+                .contentType(contentType)
+                .contentLength((long) photoDates.length)
                 .build();
 
         return Mono.fromFuture(
-                s3Client.putObject(request, AsyncRequestBody.fromBytes(dadosFoto))
+                s3Client.putObject(request, AsyncRequestBody.fromBytes(photoDates))
         ).map(response -> {
             if (response.sdkHttpResponse().isSuccessful()){
-                return String.format("https://%s.s3.%s.amazonaws.com/%s",bucketName,region,nomeArquivo);
+                return String.format("https://%s.s3.%s.amazonaws.com/%s",bucketName,region, fileName);
             }
             String errorMessage = response.sdkHttpResponse().statusText().orElse("Erro desconhecido");
             throw new CloudStorageException("Falha no upload para o S3: " + errorMessage);
@@ -53,18 +53,18 @@ public class CloudStorageServiceImpl implements CloudStorageService {
     }
 
     @Override
-    public Mono<Void> deleteFoto(String urlFoto) {
+    public Mono<Void> deletePhoto(String urlPhoto) {
         String nomeArquivo;
 
         try {
-            URL url = new URL(urlFoto);
+            URL url = new URL(urlPhoto);
             nomeArquivo = url.getPath().substring(1);
         }catch (MalformedURLException e) {
             return Mono.error(new CloudStorageException("URL da foto é inválida ", e));
         }
 
         if (nomeArquivo == null || nomeArquivo.isBlank()) {
-            return Mono.error(new CloudStorageException("Não foi possível extrair nome do arquivo da URL: " + urlFoto));
+            return Mono.error(new CloudStorageException("Não foi possível extrair nome do arquivo da URL: " + urlPhoto));
         }
 
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
