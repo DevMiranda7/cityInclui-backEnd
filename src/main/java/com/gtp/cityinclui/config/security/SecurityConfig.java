@@ -51,8 +51,19 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.POST,"/cityinclui/cadastrar-anunciante").permitAll()
                         .pathMatchers(HttpMethod.GET,"/cityinclui/restaurantes/**").permitAll()
                         .pathMatchers(HttpMethod.GET,"/cityinclui/perfil-anunciante").hasRole("OWNER")
-                        .pathMatchers(HttpMethod.PUT,"/cityinclui/edit-perfil").hasRole("OWNER")
-                        .pathMatchers(HttpMethod.DELETE,"/cityinclui/advanced-settings").hasRole("OWNER")
+                        .pathMatchers(HttpMethod.PUT,"/cityinclui/editar-perfil").hasRole("OWNER")
+                        .pathMatchers(HttpMethod.DELETE,"/cityinclui/delete-conta").hasRole("OWNER")
+
+                        .pathMatchers(HttpMethod.POST,"/cityinclui/cadastrar-cliente").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/cityinclui/exibir-clientes/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/cityinclui/cliente/me").hasRole("CLIENT")
+                        .pathMatchers(HttpMethod.PUT,"/cityinclui/editar-cliente").hasRole("CLIENT")
+                        .pathMatchers(HttpMethod.DELETE,"/cityinclui/delete-conta").hasRole("CLIENT")
+
+                        .pathMatchers(HttpMethod.POST, "/cityinclui/owner/*/avaliacoes").hasRole("CLIENT")
+                        .pathMatchers(HttpMethod.GET, "/cityinclui/owner/*/avaliacoes").permitAll()
+                        .pathMatchers(HttpMethod.PUT, "/cityinclui/owner/*/avaliacoes/**").hasRole("CLIENT")
+                        .pathMatchers(HttpMethod.DELETE, "/cityinclui/owner/*/avaliacoes/**").hasRole("CLIENT")
                         .anyExchange().authenticated()
                 )
                 .build();

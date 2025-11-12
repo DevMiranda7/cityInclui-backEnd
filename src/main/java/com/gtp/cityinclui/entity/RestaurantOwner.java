@@ -26,13 +26,16 @@ public class Owner {
     private String descricao;
 
     @Transient
-    private List<Acessibilidades> acessibilidades;
+    private List<Accessibility> acessibilidades;
 
     private String email;
 
     private String telefone;
 
     private String senha;
+
+    @Transient
+    private List<Review> avaliacoes;
 
     @Transient
     private List<PhotoRegister> fotos;
@@ -49,7 +52,7 @@ public class Owner {
     public Owner() {
     }
 
-    public Owner(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<Acessibilidades> acessibilidades, String email, String telefone, String senha, List<PhotoRegister> fotos) {
+    public Owner(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, List<Accessibility> acessibilidades, String email, String telefone, String senha, List<Review> avaliacoes, List<PhotoRegister> fotos) {
         this.id = id;
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
@@ -59,6 +62,7 @@ public class Owner {
         this.email = email;
         this.telefone = telefone;
         this.senha = senha;
+        this.avaliacoes = avaliacoes;
         this.fotos = fotos;
     }
 
@@ -102,11 +106,11 @@ public class Owner {
         this.descricao = descricao;
     }
 
-    public List<Acessibilidades> getAcessibilidades() {
+    public List<Accessibility> getAcessibilidades() {
         return acessibilidades;
     }
 
-    public void setAcessibilidades(List<Acessibilidades> acessibilidades) {
+    public void setAcessibilidades(List<Accessibility> acessibilidades) {
         this.acessibilidades = acessibilidades;
     }
 
@@ -132,6 +136,14 @@ public class Owner {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public List<Review> getAvaliacoes() {
+        return avaliacoes;
+    }
+
+    public void setAvaliacoes(List<Review> avaliacoes) {
+        this.avaliacoes = avaliacoes;
     }
 
     public List<PhotoRegister> getFotos() {

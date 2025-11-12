@@ -1,12 +1,10 @@
 package com.gtp.cityinclui.controller;
 
-import com.gtp.cityinclui.dto.owner.AcessibilidadeDTO;
 import com.gtp.cityinclui.dto.owner.CreateOwnerDTO;
 import com.gtp.cityinclui.dto.owner.EditOwnerDTO;
 import com.gtp.cityinclui.dto.owner.ResponseOwnerDTO;
 import com.gtp.cityinclui.exception.AutenticacaoNecessariaException;
 import com.gtp.cityinclui.service.OwnerService;
-import com.gtp.cityinclui.service.impl.OwnerServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,8 +20,8 @@ public class OwnerController {
 
     private final OwnerService ownerService;
 
-    public OwnerController(OwnerServiceImpl ownerServiceImpl){
-        this.ownerService = ownerServiceImpl;
+    public OwnerController(OwnerService ownerService){
+        this.ownerService = ownerService;
 
     }
 
@@ -39,6 +37,12 @@ public class OwnerController {
     @GetMapping("/restaurantes")
     Flux<ResponseOwnerDTO> restaurantesCadastrados(){
        return ownerService.restaurantesCadastrados();
+    }
+
+    @GetMapping("/restaurante/{ownerId}")
+    @ResponseStatus(HttpStatus.OK)
+    Mono<ResponseOwnerDTO> restauranteCadastradoPerfil(@PathVariable Long ownerId){
+        return ownerService.restauranteCadastradoPerfil(ownerId);
     }
 
     @GetMapping("/perfil-anunciante")
