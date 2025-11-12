@@ -8,5 +8,5 @@ public interface AuthService {
 
     Mono<AuthResponseDTO> loginOwner(AuthRequestDTO request);
 
-    //Mono<AuthResponseDTO> loginClient(AuthRequestDTO request);
+    Mono<AuthResponseDTO> loginClient(AuthRequestDTO request);
 }

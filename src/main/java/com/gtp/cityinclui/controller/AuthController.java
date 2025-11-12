@@ -23,4 +23,10 @@ public class AuthController {
     public Mono<AuthResponseDTO> loginOwner(@RequestBody @Valid AuthRequestDTO request){
         return authService.loginOwner(request);
     }
+
+    @PostMapping("/client/login")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<AuthResponseDTO> loginClient(@RequestBody @Valid AuthRequestDTO request){
+        return authService.loginClient(request);
+    }
 }
