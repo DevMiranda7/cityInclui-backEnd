@@ -1,12 +1,12 @@
 package com.gtp.cityinclui.dto.customer;
 
-import com.gtp.cityinclui.entity.Client;
+import com.gtp.cityinclui.entity.Customer;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class CreateClientDTO {
+public class CreateCustomerDTO {
 
     @NotBlank(message = "O nome do cliente não pode estar em branco")
     @Size(min = 3, max = 50, message = "O nome do Cliente deve ter entre 3 e 50 caracteres")
@@ -24,18 +24,18 @@ public class CreateClientDTO {
     @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
     private String senha;
 
-    public CreateClientDTO() {
+    public CreateCustomerDTO() {
     }
 
-    public CreateClientDTO(String nomeCompleto, String email, String telefone, String senha) {
+    public CreateCustomerDTO(String nomeCompleto, String email, String telefone, String senha) {
         this.nomeCompleto = nomeCompleto;
         this.email = email;
         this.telefone = telefone;
         this.senha = senha;
     }
 
-    public static Client toEntity(CreateClientDTO clientDTO){
-        Client novoCliente = new Client();
+    public static Customer toEntity(CreateCustomerDTO clientDTO){
+        Customer novoCliente = new Customer();
 
         novoCliente.setNomeCompleto(clientDTO.getNomeCompleto());
         novoCliente.setEmail(clientDTO.getEmail());
