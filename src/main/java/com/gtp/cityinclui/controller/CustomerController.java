@@ -1,10 +1,10 @@
 package com.gtp.cityinclui.controller;
 
-import com.gtp.cityinclui.dto.client.CreateClientDTO;
-import com.gtp.cityinclui.dto.client.EditClienteDTO;
-import com.gtp.cityinclui.dto.client.ResponseClientDTO;
-import com.gtp.cityinclui.exception.AutenticacaoNecessariaException;
-import com.gtp.cityinclui.service.ClientService;
+import com.gtp.cityinclui.dto.customer.CreateCustomerDTO;
+import com.gtp.cityinclui.dto.customer.UpdateCustomerDTO;
+import com.gtp.cityinclui.dto.customer.CustomerResponseDTO;
+import com.gtp.cityinclui.exception.AuthenticationRequiredException;
+import com.gtp.cityinclui.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,46 +14,46 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/cityinclui")
-public class ClientController {
+public class CustomerController {
 
-    private final ClientService clientService;
+    private final CustomerService customerService;
 
-    public ClientController(ClientService clientService) {
-        this.clientService = clientService;
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
     }
 
     @PostMapping("/cadastrar-cliente")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseClientDTO> cadastrarCliente(@RequestBody @Valid CreateClientDTO createClientDTO){
-        return clientService.cadastrarCliente(createClientDTO);
+    public Mono<CustomerResponseDTO> createCustomer(@RequestBody @Valid CreateCustomerDTO createCustomerDTO){
+        return customerService.createCustomer(createCustomerDTO);
     }
 
     @GetMapping("/exibir-clientes")
     @ResponseStatus(HttpStatus.OK)
-    public Flux<ResponseClientDTO> exibirClientes(){
-        return clientService.exibirClientes();
+    public Flux<CustomerResponseDTO> getAllCustomers(){
+        return customerService.getAllCustomers();
     }
 
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<ResponseClientDTO> exibirPerfilCliente(@AuthenticationPrincipal Mono<String> authenticationEmail){
-        return authenticationEmail.switchIfEmpty(Mono.error(new AutenticacaoNecessariaException("Autenticação necessária")))
-                .flatMap(email -> clientService.exibirPerfilCliente(email));
+    public Mono<CustomerResponseDTO> getCustomerById(@AuthenticationPrincipal Mono<String> authenticationEmail){
+        return authenticationEmail.switchIfEmpty(Mono.error(new AuthenticationRequiredException("Autenticação necessária")))
+                .flatMap(email -> customerService.getCustomerProfile(email));
     }
             
     @PutMapping("/editar-cliente")
-    public Mono<ResponseClientDTO> editarCliente(
-            @RequestBody EditClienteDTO editClienteDTO,
+    public Mono<CustomerResponseDTO> updateCustomer(
+            @RequestBody UpdateCustomerDTO updateCustomerDTO,
             @AuthenticationPrincipal Mono<String> authenticationEmail){
-            return authenticationEmail.switchIfEmpty(Mono.error(new AutenticacaoNecessariaException("Autenticação necessária")))
+            return authenticationEmail.switchIfEmpty(Mono.error(new AuthenticationRequiredException("Autenticação necessária")))
                     .flatMap(email ->
-                        clientService.editarCliente(editClienteDTO,email));
+                        customerService.updateCustomer(updateCustomerDTO,email));
     }
 
-    @DeleteMapping(" ")
-    public Mono<Void> deletarCliente(@AuthenticationPrincipal Mono<String> authenticationEmail){
-        return authenticationEmail.switchIfEmpty(Mono.error(new AutenticacaoNecessariaException("Autenticação necessária")))
-                .flatMap(email -> clientService.deletarCliente(email));
+    @DeleteMapping("/delete-conta")
+    public Mono<Void> deleteCustomer(@AuthenticationPrincipal Mono<String> authenticationEmail){
+        return authenticationEmail.switchIfEmpty(Mono.error(new AuthenticationRequiredException("Autenticação necessária")))
+                .flatMap(email -> customerService.deleteCustomer(email));
     }
 
 

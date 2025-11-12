@@ -7,23 +7,24 @@ import com.gtp.cityinclui.entity.Customer;
 import com.gtp.cityinclui.exception.EmailAlreadyExistsException;
 import com.gtp.cityinclui.exception.UserNotFoundException;
 import com.gtp.cityinclui.repository.CustomerRepository;
+import com.gtp.cityinclui.service.CustomerService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-public class CustomerServiceImplImpl implements com.gtp.cityinclui.service.CustomerServiceImpl {
+public class CustomerServiceImpl implements CustomerService {
    private final CustomerRepository customerRepository;
    private final PasswordEncoder passwordEncoder;
 
-    public CustomerServiceImplImpl(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public Mono<CustomerResponseDTO> cadastrarCliente(CreateCustomerDTO createCustomerDTO) {
+    public Mono<CustomerResponseDTO> createCustomer(CreateCustomerDTO createCustomerDTO) {
         return customerRepository.existsByEmail(createCustomerDTO.getEmail())
                 .flatMap(emailExists-> {
                     if (emailExists){
@@ -39,20 +40,20 @@ public class CustomerServiceImplImpl implements com.gtp.cityinclui.service.Custo
     }
 
     @Override
-    public Flux<CustomerResponseDTO> exibirClientes() {
+    public Flux<CustomerResponseDTO> getAllCustomers() {
         return customerRepository.findAll()
                 .map(CustomerResponseDTO::fromEntity);
     }
 
     @Override
-    public Mono<CustomerResponseDTO> exibirPerfilCliente(String email) {
+    public Mono<CustomerResponseDTO> getCustomerProfile(String email) {
         return customerRepository.findByEmail(email)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("Usuário não encontrado")))
                 .map(CustomerResponseDTO::fromEntity);
     }
 
     @Override
-    public Mono<CustomerResponseDTO> editarCliente(UpdateCustomerDTO updateCustomerDTO, String email) {
+    public Mono<CustomerResponseDTO> updateCustomer(UpdateCustomerDTO updateCustomerDTO, String email) {
         return customerRepository.findByEmail(email)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNotFoundException("Usuário não encontrado"))))
                         .flatMap(cliente -> {
@@ -69,7 +70,7 @@ public class CustomerServiceImplImpl implements com.gtp.cityinclui.service.Custo
     }
 
     @Override
-    public Mono<Void> deletarCliente(String email) {
+    public Mono<Void> deleteCustomer(String email) {
         return customerRepository.findByEmail(email)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("Usuário não encontrado")))
                 .flatMap(client -> customerRepository.deleteById(client.getId()));

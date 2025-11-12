@@ -6,14 +6,15 @@ import com.gtp.cityinclui.dto.customer.CustomerResponseDTO;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface ClientService {
-    Mono<CustomerResponseDTO> cadastrarCliente(CreateCustomerDTO createCustomerDTO);
+public interface CustomerService {
+    Mono<CustomerResponseDTO> createCustomer(CreateCustomerDTO createCustomerDTO);
 
-    Flux<CustomerResponseDTO> exibirClientes();
+    Flux<CustomerResponseDTO> getAllCustomers();
 
-    Mono<CustomerResponseDTO> exibirPerfilCliente(String email);
+    Mono<CustomerResponseDTO> getCustomerProfile(String email);
 
-    Mono<CustomerResponseDTO> editarCliente(UpdateCustomerDTO updateCustomerDTO, String email);
+    Mono<CustomerResponseDTO> updateCustomer(UpdateCustomerDTO updateCustomerDTO, String email);
 
-    Mono<Void> deletarCliente(String email);
+    Mono<Void> deleteCustomer(String email);
 }
+

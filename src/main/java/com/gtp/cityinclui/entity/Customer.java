@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.LocalDate;
 
 @Table(name = "Client")
-public class Client {
+public class Customer {
     @Id
     private Long id;
 
@@ -23,10 +23,10 @@ public class Client {
     @Column("data_cadastro")
     private LocalDate dataDeCadastro;
 
-    public Client() {
+    public Customer() {
     }
 
-    public Client(Long id, String nomeCompleto, String email, String telefone, String senha) {
+    public Customer(Long id, String nomeCompleto, String email, String telefone, String senha) {
         this.id = id;
         this.nomeCompleto = nomeCompleto;
         this.email = email;

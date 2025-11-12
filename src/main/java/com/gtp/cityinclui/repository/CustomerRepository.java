@@ -6,8 +6,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface ClientRepository extends ReactiveCrudRepository<Customer, Long> {
-
+public interface CustomerRepository extends ReactiveCrudRepository<Customer, Long> {
     Mono<Customer> findByEmail(String email);
 
     Mono<Boolean> existsByEmail(String email);
