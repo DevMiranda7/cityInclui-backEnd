@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 @Repository
-
 public interface PhotoRepository extends ReactiveCrudRepository<PhotoRegister, Long > {
 
     Flux<PhotoRegister> findByOwnerId(Long ownerId);

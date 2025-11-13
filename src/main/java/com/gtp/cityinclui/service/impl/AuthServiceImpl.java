@@ -3,7 +3,8 @@ package com.gtp.cityinclui.service.impl;
 import com.gtp.cityinclui.dto.auth.AuthRequestDTO;
 import com.gtp.cityinclui.dto.auth.AuthResponseDTO;
 import com.gtp.cityinclui.exception.InvalidCredentialsException;
-import com.gtp.cityinclui.repository.OwnerRepository;
+import com.gtp.cityinclui.repository.CustomerRepository;
+import com.gtp.cityinclui.repository.RestaurantOwnerRepository;
 import com.gtp.cityinclui.security.JwtUtil;
 import com.gtp.cityinclui.service.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,23 +14,38 @@ import reactor.core.publisher.Mono;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private final OwnerRepository ownerRepository;
+    private final RestaurantOwnerRepository restaurantOwnerRepository;
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public AuthServiceImpl(OwnerRepository ownerRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
-        this.ownerRepository = ownerRepository;
+    public AuthServiceImpl(RestaurantOwnerRepository restaurantOwnerRepository, CustomerRepository customerRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        this.restaurantOwnerRepository = restaurantOwnerRepository;
+        this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
 
     @Override
     public Mono<AuthResponseDTO> loginOwner(AuthRequestDTO request) {
-        return ownerRepository.findByEmail(request.getEmail())
+        return restaurantOwnerRepository.findByEmail(request.getEmail())
                 .flatMap(owner -> {
                     if (passwordEncoder.matches(request.getSenha(), owner.getSenha())){
 
                         String token = jwtUtil.generateToken(owner.getEmail(), "ROLE_OWNER");
+                        return Mono.just(new AuthResponseDTO(token));
+                    }else{
+                        return Mono.error(new InvalidCredentialsException("E-mail ou senha inválidos"));
+                    }
+                }).switchIfEmpty(Mono.error(new InvalidCredentialsException("E-mail ou senha inválidos")));
+    }
+
+    @Override
+    public Mono<AuthResponseDTO> loginClient(AuthRequestDTO request) {
+        return customerRepository.findByEmail(request.getEmail())
+                .flatMap(client -> {
+                    if (passwordEncoder.matches(request.getSenha(), client.getSenha())){
+                        String token = jwtUtil.generateToken(client.getEmail(),"ROLE_CLIENT");
                         return Mono.just(new AuthResponseDTO(token));
                     }else{
                         return Mono.error(new InvalidCredentialsException("E-mail ou senha inválidos"));

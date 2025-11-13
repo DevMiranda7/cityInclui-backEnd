@@ -1,10 +1,10 @@
 package com.gtp.cityinclui.dto.owner;
 
-import com.gtp.cityinclui.entity.Owner;
+import com.gtp.cityinclui.dto.review.ReviewResponseDTO;
+import com.gtp.cityinclui.entity.RestaurantOwner;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class ResponseOwnerDTO {
     private Long id;
@@ -14,13 +14,13 @@ public class ResponseOwnerDTO {
     private String descricao;
     private String email;
     private String telefone;
-    private List<Photos> photos;
-    private List<AcessibilidadeDTO> acessibilidadeDTOS;
-
+    private List<RestaurantPhotoDTO> photos;
+    private List<AccessibilityDTO> accessibilityDTOS;
+    private List<ReviewResponseDTO> avaliacoes;
     public ResponseOwnerDTO() {
     }
 
-    public ResponseOwnerDTO(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, String email, String telefone, List<Photos> photos, List<AcessibilidadeDTO> acessibilidadeDTO) {
+    public ResponseOwnerDTO(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, String email, String telefone, List<RestaurantPhotoDTO> photos, List<AccessibilityDTO> accessibilityDTOS, List<ReviewResponseDTO> avaliacoes) {
         this.id = id;
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
@@ -29,33 +29,19 @@ public class ResponseOwnerDTO {
         this.email = email;
         this.telefone = telefone;
         this.photos = photos;
-        this.acessibilidadeDTOS = acessibilidadeDTO;
+        this.accessibilityDTOS = accessibilityDTOS;
+        this.avaliacoes = avaliacoes;
     }
 
-    public static ResponseOwnerDTO fromEntity(Owner owner){
+    public static ResponseOwnerDTO fromEntity(RestaurantOwner restaurantOwner){
         ResponseOwnerDTO responseOwnerDTO = new ResponseOwnerDTO();
-        responseOwnerDTO.setId(owner.getId());
-        responseOwnerDTO.setNomeDoRestaurante(owner.getNomeDoRestaurante());
-        responseOwnerDTO.setNomeDoAnunciante(owner.getNomeDoAnunciante());
-        responseOwnerDTO.setCardapio(owner.getCardapio());
-        responseOwnerDTO.setDescricao(owner.getDescricao());
-        responseOwnerDTO.setEmail(owner.getEmail());
-        responseOwnerDTO.setTelefone(owner.getTelefone());
-
-        if (owner.getFotos() != null){
-            List<Photos> photosList = owner.getFotos().stream()
-                    .map(Photos::fromEntity)
-                    .collect(Collectors.toList());
-
-            responseOwnerDTO.setPhotos(photosList);
-        }
-
-        if (owner.getAcessibilidades() != null){
-            List<AcessibilidadeDTO> acessibilidadeList = owner.getAcessibilidades().stream()
-                    .map(AcessibilidadeDTO::fromEntity)
-                    .collect(Collectors.toList());
-            responseOwnerDTO.setAcessibilidadeDTOS(acessibilidadeList);
-        }
+        responseOwnerDTO.setId(restaurantOwner.getId());
+        responseOwnerDTO.setNomeDoRestaurante(restaurantOwner.getNomeDoRestaurante());
+        responseOwnerDTO.setNomeDoAnunciante(restaurantOwner.getNomeDoAnunciante());
+        responseOwnerDTO.setCardapio(restaurantOwner.getCardapio());
+        responseOwnerDTO.setDescricao(restaurantOwner.getDescricao());
+        responseOwnerDTO.setEmail(restaurantOwner.getEmail());
+        responseOwnerDTO.setTelefone(restaurantOwner.getTelefone());
 
         return responseOwnerDTO;
     }
@@ -116,20 +102,28 @@ public class ResponseOwnerDTO {
         this.telefone = telefone;
     }
 
-    public List<Photos> getPhoto() {
+    public List<RestaurantPhotoDTO> getPhoto() {
         return photos;
     }
 
-    public void setPhotos(List<Photos> photos) {
+    public void setPhotos(List<RestaurantPhotoDTO> photos) {
         this.photos = photos;
     }
 
-    public List<AcessibilidadeDTO> getAcessibilidadeDTOS() {
-        return acessibilidadeDTOS;
+    public List<AccessibilityDTO> getAcessibilidadeDTOS() {
+        return accessibilityDTOS;
     }
 
-    public void setAcessibilidadeDTOS(List<AcessibilidadeDTO> acessibilidadeDTOS) {
-        this.acessibilidadeDTOS = acessibilidadeDTOS;
+    public void setAcessibilidadeDTOS(List<AccessibilityDTO> accessibilityDTOS) {
+        this.accessibilityDTOS = accessibilityDTOS;
+    }
+
+    public List<ReviewResponseDTO> getAvaliacoes() {
+        return avaliacoes;
+    }
+
+    public void setAvaliacoes(List<ReviewResponseDTO> avaliacoes) {
+        this.avaliacoes = avaliacoes;
     }
 
     @Override
