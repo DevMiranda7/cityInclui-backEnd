@@ -14,12 +14,15 @@ public class AuthRequestDTO {
     @NotBlank(message = "A senha é obrigatória")
     private String senha;
 
+    private String userType;
+
     public AuthRequestDTO() {
     }
 
-    public AuthRequestDTO(String email, String senha) {
+    public AuthRequestDTO(String email, String senha, String userType) {
         this.email = email;
         this.senha = senha;
+        this.userType = userType;
     }
 
     public String getEmail() {
@@ -38,11 +41,20 @@ public class AuthRequestDTO {
         this.senha = senha;
     }
 
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
     @Override
     public String toString() {
         return "AuthRequestDTO{" +
                 "email='" + email + '\'' +
                 ", senha='" + senha + '\'' +
+                ", userType='" + userType + '\'' +
                 '}';
     }
 
@@ -51,11 +63,11 @@ public class AuthRequestDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AuthRequestDTO that = (AuthRequestDTO) o;
-        return Objects.equals(email, that.email) && Objects.equals(senha, that.senha);
+        return Objects.equals(email, that.email) && Objects.equals(senha, that.senha) && Objects.equals(userType, that.userType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, senha);
+        return Objects.hash(email, senha, userType);
     }
 }
