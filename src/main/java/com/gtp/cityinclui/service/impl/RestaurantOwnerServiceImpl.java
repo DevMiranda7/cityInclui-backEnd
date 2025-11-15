@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
     private final AccessibilityRepository accessibilityRepository;
     private final CloudStorageService cloudStorageService;
     private final PasswordEncoder passwordEncoder;
+    private final RestaurantOwnerAssembler ownerAssembler;
     private static final List<MediaType> ALLOWED_IMAGE_TYPES = List.of(
             MediaType.IMAGE_JPEG,
             MediaType.IMAGE_PNG
@@ -41,7 +43,8 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
             AccessibilityRepository accessibilityRepository,
             ReviewRepository reviewRepository,
             CloudStorageService cloudStorageService,
-            PasswordEncoder passwordEncoder)
+            PasswordEncoder passwordEncoder,
+            RestaurantOwnerAssembler ownerAssembler)
     {
         this.restaurantOwnerRepository = restaurantOwnerRepository;
         this.photoRepository = photoRepository;
@@ -49,6 +52,7 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
         this.reviewRepository = reviewRepository;
         this.cloudStorageService = cloudStorageService;
         this.passwordEncoder = passwordEncoder;
+        this.ownerAssembler = ownerAssembler;
     }
 
     @Override
@@ -60,26 +64,32 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
         return validatePhotoExistence(validPhotos )
                 .then(salvarOwner(createRestaurantOwnerDTO))
                 .flatMap(savedOwner  -> savePhotosAndAccessibility(savedOwner , createRestaurantOwnerDTO, validPhotos ))
-                .flatMap(this::loadRelationshipsAndConvert);
+                .flatMap(ownerAssembler::assembleOwnerDTO);
     }
 
     @Override
     public Flux<ResponseOwnerDTO> getAllOwners(){
         return restaurantOwnerRepository.findAll()
-                .concatMap(this::loadRelationshipsAndConvert);
+                .concatMap(ownerAssembler::assembleOwnerDTO);
+    }
+
+    @Override
+    public Flux<ResponseOwnerDTO> getTop5RatedOwners() {
+        return restaurantOwnerRepository.findTop5ByAverageRating()
+                .concatMap(ownerAssembler::assembleOwnerDTO);
     }
 
     @Override
     public Mono<ResponseOwnerDTO> getOwnerById(Long ownerId) {
         return restaurantOwnerRepository.findById(ownerId).
                 switchIfEmpty(Mono.error(new UserNotFoundException("Usuário não encontrado")))
-                .flatMap(this::loadRelationshipsAndConvert);
+                .flatMap(ownerAssembler::assembleOwnerDTO);
     }
 
     @Override
     public Mono<ResponseOwnerDTO> getOwnerProfile(String email) {
         return restaurantOwnerRepository.findByEmail(email)
-                .flatMap(this::loadRelationshipsAndConvert)
+                .flatMap(ownerAssembler::assembleOwnerDTO)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNotFoundException("Usuário não encontrado"))));
     }
 
@@ -112,7 +122,7 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
                   restaurantOwner.setAcessibilidades(accessibilities);
                   return restaurantOwner;
               })
-              .flatMap(this::loadRelationshipsAndConvert);
+              .flatMap(ownerAssembler::assembleOwnerDTO);
     }
 
     @Override
@@ -287,37 +297,6 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
 
     private Mono<List<PhotoRegister>> getExistingPhotos(Long onwerId){
         return photoRepository.findByOwnerId(onwerId).collectList();
-    }
-
-    private Mono<ResponseOwnerDTO> loadRelationshipsAndConvert(RestaurantOwner restaurantOwner){
-        Mono<List<RestaurantPhotoDTO>> photoMono = photoRepository.findByOwnerId(restaurantOwner.getId())
-                .map(RestaurantPhotoDTO::fromEntity)
-                .collectList()
-                .defaultIfEmpty(List.of());
-
-        Mono<List<AccessibilityDTO>> accessibilityMono  = accessibilityRepository.findByOwnerId(restaurantOwner.getId())
-                .map(AccessibilityDTO::fromEntity)
-                .collectList()
-                .defaultIfEmpty(List.of());
-
-        Mono<List<ReviewResponseDTO>> reviewMono = reviewRepository.findByOwnerId(restaurantOwner.getId())
-                .map(ReviewResponseDTO::fromEntity)
-                .collectList()
-                .defaultIfEmpty(List.of());
-
-        return Mono.zip(photoMono, accessibilityMono , reviewMono)
-                .map(tuple -> {
-                    List<RestaurantPhotoDTO> photos = tuple.getT1();
-                    List<AccessibilityDTO> accessibilities = tuple.getT2();
-                    List<ReviewResponseDTO> reviews = tuple.getT3();
-
-                    ResponseOwnerDTO responseOwnerDTO = ResponseOwnerDTO.fromEntity(restaurantOwner);
-                    responseOwnerDTO.setPhotos(photos);
-                    responseOwnerDTO.setAcessibilidadeDTOS(accessibilities);
-                    responseOwnerDTO.setAvaliacoes(reviews);
-
-                    return  responseOwnerDTO;
-                });
     }
 
     private Mono<List<PhotoRegister>> processPhotos(Long ownerId, Flux<FilePart> photos){

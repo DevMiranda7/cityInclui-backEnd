@@ -45,6 +45,11 @@ public class RestaurantOwnerController {
         return restaurantOwnerService.getOwnerById(ownerId);
     }
 
+    @GetMapping("/restaurantes/top5")
+    public Flux<ResponseOwnerDTO> getTop5Restaurants(){
+        return restaurantOwnerService.getTop5RatedOwners();
+    }
+
     @GetMapping("/perfil-anunciante")
     @ResponseStatus(HttpStatus.OK)
     public Mono<ResponseOwnerDTO> getAuthenticatedOwnerProfile(@AuthenticationPrincipal Mono<String> authenticationEmail){
