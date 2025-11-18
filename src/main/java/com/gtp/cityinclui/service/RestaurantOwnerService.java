@@ -13,6 +13,8 @@ public interface RestaurantOwnerService {
 
     Flux<ResponseOwnerDTO> getAllOwners();
 
+    Flux<ResponseOwnerDTO> getTop5RatedOwners();
+
     Mono<ResponseOwnerDTO> getOwnerById(Long ownerId);
 
     Mono<ResponseOwnerDTO> getOwnerProfile(String email);

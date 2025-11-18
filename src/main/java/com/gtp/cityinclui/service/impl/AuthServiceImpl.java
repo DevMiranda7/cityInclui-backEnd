@@ -26,8 +26,21 @@ public class AuthServiceImpl implements AuthService {
         this.jwtUtil = jwtUtil;
     }
 
+
     @Override
-    public Mono<AuthResponseDTO> loginOwner(AuthRequestDTO request) {
+    public Mono<AuthResponseDTO> login(AuthRequestDTO request) {
+        String userType = request.getUserType();
+
+        if ("OWNER".equalsIgnoreCase(userType)){
+            return this.loginOwner(request);
+        } else if ("CLIENT".equalsIgnoreCase(userType)) {
+            return this.loginClient(request);
+        }else {
+            return Mono.error(new InvalidCredentialsException("Tipo de usuário inválido"));
+        }
+    }
+
+    private Mono<AuthResponseDTO> loginOwner(AuthRequestDTO request) {
         return restaurantOwnerRepository.findByEmail(request.getEmail())
                 .flatMap(owner -> {
                     if (passwordEncoder.matches(request.getSenha(), owner.getSenha())){
@@ -40,8 +53,8 @@ public class AuthServiceImpl implements AuthService {
                 }).switchIfEmpty(Mono.error(new InvalidCredentialsException("E-mail ou senha inválidos")));
     }
 
-    @Override
-    public Mono<AuthResponseDTO> loginClient(AuthRequestDTO request) {
+
+    private Mono<AuthResponseDTO> loginClient(AuthRequestDTO request) {
         return customerRepository.findByEmail(request.getEmail())
                 .flatMap(client -> {
                     if (passwordEncoder.matches(request.getSenha(), client.getSenha())){

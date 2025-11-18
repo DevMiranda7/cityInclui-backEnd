@@ -3,6 +3,7 @@ package com.gtp.cityinclui.dto.owner;
 import com.gtp.cityinclui.dto.review.ReviewResponseDTO;
 import com.gtp.cityinclui.entity.RestaurantOwner;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,6 +15,7 @@ public class ResponseOwnerDTO {
     private String descricao;
     private String email;
     private String telefone;
+    private BigDecimal mediaAvaliacao;
     private List<RestaurantPhotoDTO> photos;
     private List<AccessibilityDTO> accessibilityDTOS;
     private List<ReviewResponseDTO> avaliacoes;
@@ -100,6 +102,14 @@ public class ResponseOwnerDTO {
 
     public void setTelefone(String telefone) {
         this.telefone = telefone;
+    }
+
+    public BigDecimal getMediaAvaliacao() {
+        return mediaAvaliacao;
+    }
+
+    public void setMediaAvaliacao(BigDecimal mediaAvaliacao) {
+        this.mediaAvaliacao = mediaAvaliacao;
     }
 
     public List<RestaurantPhotoDTO> getPhoto() {
