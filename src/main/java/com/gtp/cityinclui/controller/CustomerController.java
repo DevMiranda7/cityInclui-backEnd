@@ -34,7 +34,7 @@ public class CustomerController {
         return customerService.getAllCustomers();
     }
 
-    @GetMapping("/me")
+    @GetMapping("/cliente/me")
     @ResponseStatus(HttpStatus.OK)
     public Mono<CustomerResponseDTO> getCustomerById(@AuthenticationPrincipal Mono<String> authenticationEmail){
         return authenticationEmail.switchIfEmpty(Mono.error(new AuthenticationRequiredException("Autenticação necessária")))
