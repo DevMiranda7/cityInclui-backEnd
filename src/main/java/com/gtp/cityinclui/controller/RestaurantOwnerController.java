@@ -65,7 +65,7 @@ public class RestaurantOwnerController {
     public Mono<ResponseOwnerDTO> updateOwnerProfile(
             @AuthenticationPrincipal Mono<String> authenticationEmail,
             @RequestPart("owner") @Valid UpdateRestaurantOwnerDTO updateRestaurantOwnerDTO,
-            @RequestPart("photos") Flux<FilePart> photosFlux
+            @RequestPart(value = "photos", required = false) Flux<FilePart> photosFlux
     ){
         return authenticationEmail
                 .switchIfEmpty(Mono.error(
