@@ -1,8 +1,8 @@
 spring:
   r2dbc:
-    url: r2dbc:postgresql://localhost:5433/dbcity_gtp
-    username: postgres
-    password: 1234
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_R2DBC_USERNAME}
+    password: ${SPRING_R2DBC_PASSWORD}
     pool:
       enabled: true
       initial-size: 5
@@ -11,13 +11,12 @@ spring:
 
 aws:
   s3:
-    region:
-    access-key:
-    secret-key:
-    bucket-name:
-
+    region: ${AWS_S3_REGION}
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    bucket-name: ${AWS_S3_BUCKET}
 
 jwt:
-  secret:
+  secret: ${JWT_SECRET}
   expiration:
-    ms:
+    ms: ${JWT_EXPIRATION_MS}
