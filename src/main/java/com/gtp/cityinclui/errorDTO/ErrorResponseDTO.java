@@ -14,6 +14,14 @@ public class ErrorResponseDTO {
         this.status = status;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
     @Override
     public String toString() {
         return "ErrorResponseDTO{" +

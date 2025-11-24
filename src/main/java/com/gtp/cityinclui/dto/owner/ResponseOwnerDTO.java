@@ -1,49 +1,50 @@
 package com.gtp.cityinclui.dto.owner;
 
-import com.gtp.cityinclui.entity.Owner;
+import com.gtp.cityinclui.dto.review.ReviewResponseDTO;
+import com.gtp.cityinclui.entity.RestaurantOwner;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class ResponseOwnerDTO {
     private Long id;
     private String nomeDoRestaurante;
     private String nomeDoAnunciante;
     private String cardapio;
+    private String descricao;
     private String email;
     private String telefone;
-    private List<Photos> photos;
-
+    private BigDecimal mediaAvaliacao;
+    private List<RestaurantPhotoDTO> photos;
+    private List<AccessibilityDTO> accessibilityDTOS;
+    private List<ReviewResponseDTO> avaliacoes;
     public ResponseOwnerDTO() {
     }
 
-    public ResponseOwnerDTO(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String email, String telefone, List<Photos> photos) {
+    public ResponseOwnerDTO(Long id, String nomeDoRestaurante, String nomeDoAnunciante, String cardapio, String descricao, String email, String telefone, List<RestaurantPhotoDTO> photos, List<AccessibilityDTO> accessibilityDTOS, List<ReviewResponseDTO> avaliacoes) {
         this.id = id;
         this.nomeDoRestaurante = nomeDoRestaurante;
         this.nomeDoAnunciante = nomeDoAnunciante;
         this.cardapio = cardapio;
+        this.descricao = descricao;
         this.email = email;
         this.telefone = telefone;
         this.photos = photos;
+        this.accessibilityDTOS = accessibilityDTOS;
+        this.avaliacoes = avaliacoes;
     }
 
-    public static ResponseOwnerDTO fromEntity(Owner owner){
+    public static ResponseOwnerDTO fromEntity(RestaurantOwner restaurantOwner){
         ResponseOwnerDTO responseOwnerDTO = new ResponseOwnerDTO();
-        responseOwnerDTO.setId(owner.getId());
-        responseOwnerDTO.setNomeDoRestaurante(owner.getNomeDoRestaurante());
-        responseOwnerDTO.setNomeDoAnunciante(owner.getNomeDoAnunciante());
-        responseOwnerDTO.setCardapio(owner.getCardapio());
-        responseOwnerDTO.setEmail(owner.getEmail());
-        responseOwnerDTO.setTelefone(owner.getTelefone());
+        responseOwnerDTO.setId(restaurantOwner.getId());
+        responseOwnerDTO.setNomeDoRestaurante(restaurantOwner.getNomeDoRestaurante());
+        responseOwnerDTO.setNomeDoAnunciante(restaurantOwner.getNomeDoAnunciante());
+        responseOwnerDTO.setCardapio(restaurantOwner.getCardapio());
+        responseOwnerDTO.setDescricao(restaurantOwner.getDescricao());
+        responseOwnerDTO.setEmail(restaurantOwner.getEmail());
+        responseOwnerDTO.setTelefone(restaurantOwner.getTelefone());
 
-        if (owner.getFotos() != null){
-            List<Photos> photosList = owner.getFotos().stream()
-                    .map(Photos::fromEntity)
-                    .collect(Collectors.toList());
-
-            responseOwnerDTO.setPhotoDTOS(photosList);
-        }
         return responseOwnerDTO;
     }
 
@@ -79,6 +80,14 @@ public class ResponseOwnerDTO {
         this.cardapio = cardapio;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -95,24 +104,48 @@ public class ResponseOwnerDTO {
         this.telefone = telefone;
     }
 
-    public List<Photos> getPhotoDTOS() {
+    public BigDecimal getMediaAvaliacao() {
+        return mediaAvaliacao;
+    }
+
+    public void setMediaAvaliacao(BigDecimal mediaAvaliacao) {
+        this.mediaAvaliacao = mediaAvaliacao;
+    }
+
+    public List<RestaurantPhotoDTO> getPhoto() {
         return photos;
     }
 
-    public void setPhotoDTOS(List<Photos> photos) {
+    public void setPhotos(List<RestaurantPhotoDTO> photos) {
         this.photos = photos;
+    }
+
+    public List<AccessibilityDTO> getAcessibilidadeDTOS() {
+        return accessibilityDTOS;
+    }
+
+    public void setAcessibilidadeDTOS(List<AccessibilityDTO> accessibilityDTOS) {
+        this.accessibilityDTOS = accessibilityDTOS;
+    }
+
+    public List<ReviewResponseDTO> getAvaliacoes() {
+        return avaliacoes;
+    }
+
+    public void setAvaliacoes(List<ReviewResponseDTO> avaliacoes) {
+        this.avaliacoes = avaliacoes;
     }
 
     @Override
     public String toString() {
         return "ResponseOwnerDTO{" +
-                "id=" + id +
-                ", nomeDoRestaurante='" + nomeDoRestaurante + '\'' +
+                "nomeDoRestaurante='" + nomeDoRestaurante + '\'' +
                 ", nomeDoAnunciante='" + nomeDoAnunciante + '\'' +
                 ", cardapio='" + cardapio + '\'' +
+                ", descricao='" + descricao + '\'' +
                 ", email='" + email + '\'' +
                 ", telefone='" + telefone + '\'' +
-                ", photoDTOS=" + photos +
+                ", photos=" + photos +
                 '}';
     }
 
@@ -121,11 +154,11 @@ public class ResponseOwnerDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ResponseOwnerDTO that = (ResponseOwnerDTO) o;
-        return Objects.equals(id, that.id) && Objects.equals(nomeDoRestaurante, that.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, that.nomeDoAnunciante) && Objects.equals(cardapio, that.cardapio) && Objects.equals(email, that.email) && Objects.equals(telefone, that.telefone) && Objects.equals(photos, that.photos);
+        return Objects.equals(nomeDoRestaurante, that.nomeDoRestaurante) && Objects.equals(nomeDoAnunciante, that.nomeDoAnunciante) && Objects.equals(cardapio, that.cardapio) && Objects.equals(descricao, that.descricao) && Objects.equals(email, that.email) && Objects.equals(telefone, that.telefone) && Objects.equals(photos, that.photos);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nomeDoRestaurante, nomeDoAnunciante, cardapio, email, telefone, photos);
+        return Objects.hash(nomeDoRestaurante, nomeDoAnunciante, cardapio, descricao, email, telefone, photos);
     }
 }

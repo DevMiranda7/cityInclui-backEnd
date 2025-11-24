@@ -6,8 +6,8 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Objects;
 
-@Table(name = "Photo")
-public class PhotoRegister {
+@Table(name = "Acessibilidade")
+public class Accessibility {
 
     @Id
     private Long id;
@@ -15,16 +15,16 @@ public class PhotoRegister {
     @Column("owner_id")
     private Long ownerId;
 
-    @Column("url_photo")
-    private String urlFoto;
+    @Column("acessibilidades")
+    private String acessibilidades;
 
-    public PhotoRegister() {
+    public Accessibility() {
     }
 
-    public PhotoRegister(Long id, Long ownerId, String urlFoto) {
+    public Accessibility(Long id, Long ownerId, String acessibilidades) {
         this.id = id;
         this.ownerId = ownerId;
-        this.urlFoto = urlFoto;
+        this.acessibilidades = acessibilidades;
     }
 
     public Long getId() {
@@ -43,20 +43,20 @@ public class PhotoRegister {
         this.ownerId = ownerId;
     }
 
-    public String getUrlFoto() {
-        return urlFoto;
+    public String getAcessibilidades() {
+        return acessibilidades;
     }
 
-    public void setUrlFoto(String urlFoto) {
-        this.urlFoto = urlFoto;
+    public void setAcessibilidades(String acessibilidades) {
+        this.acessibilidades = acessibilidades;
     }
 
     @Override
     public String toString() {
-        return "PhotoRegister{" +
+        return "OwnerAcessibilidades{" +
                 "id=" + id +
                 ", ownerId=" + ownerId +
-                ", urlFoto='" + urlFoto + '\'' +
+                ", acessibilidade='" + acessibilidades + '\'' +
                 '}';
     }
 
@@ -64,12 +64,12 @@ public class PhotoRegister {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PhotoRegister that = (PhotoRegister) o;
-        return Objects.equals(id, that.id) && Objects.equals(ownerId, that.ownerId) && Objects.equals(urlFoto, that.urlFoto);
+        Accessibility that = (Accessibility) o;
+        return Objects.equals(id, that.id) && Objects.equals(ownerId, that.ownerId) && Objects.equals(acessibilidades, that.acessibilidades);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, ownerId, urlFoto);
+        return Objects.hash(id, ownerId, acessibilidades);
     }
 }
