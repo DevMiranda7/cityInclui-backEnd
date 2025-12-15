@@ -1,5 +1,5 @@
 
-# Autor
+# Autores
 
 - ## Luan Miranda
 - ## Emerson Leandro
