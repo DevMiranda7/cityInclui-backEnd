@@ -2,6 +2,11 @@
 # Autor
 
 - ## Luan Miranda
+- ## Emerson Leandro
+- ## Felipe Wozniak
+- ## Gabriel Pigozzi
+- ## Gustavo Renner
+- ## Daniel Tolledo
 
 
 #  CityInclui
